@@ -1,0 +1,3130 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bureau Veritas | 2026 Unified Finance Calendar</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2canvas for High Quality Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- SheetJS for Excel Import/Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            /* BV Corporate Palette */
+            --bv-navy: #00049E;
+            --bv-dark-blue: #000366;
+            --bv-turquoise: #00AEC7;
+            --bv-mint: #71C698;
+            --bv-lavender: #B2B2FF;
+            --bv-white: #FFFFFF;
+            --bv-bg: #F4F7FA;
+            --bv-border: #D1D5DB;
+            --bv-text: #1F2937;
+
+            /* Categories Colors */
+            --cat-closing: #E74C3C;
+            /* Red - Hard Deadlines */
+            --cat-fpa: #00AEC7;
+            /* Turquoise - FP&A */
+            --cat-tax: #F39C12;
+            /* Orange - Tax */
+            --cat-treasury: #9B59B6;
+            /* Purple - Treasury */
+            --cat-gov: #00049E;
+            /* Navy - Governance/Meetings */
+            --cat-control: #27AE60;
+            /* Green - Control */
+            --cat-holiday: #BDC3C7;
+            /* Gray - Holidays */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--bv-bg);
+            color: var(--bv-text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: linear-gradient(135deg, var(--bv-navy) 0%, var(--bv-dark-blue) 100%);
+            color: white;
+            padding: 0 25px;
+            height: 70px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            height: 40px;
+            width: auto;
+            filter: brightness(0) invert(1);
+        }
+
+        .app-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: -0.5px;
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-title small {
+            font-weight: 400;
+            font-size: 0.7rem;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--bv-turquoise);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: #0097ad;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .month-nav {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-right: 10px;
+        }
+
+        .nav-arrow {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        .nav-arrow:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .current-date-display {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            min-width: 180px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        /* --- LAYOUT --- */
+        .app-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        aside {
+            width: 270px;
+            background: white;
+            border-right: 1px solid var(--bv-border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            z-index: 90;
+        }
+
+        .filter-section h3 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--bv-navy);
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--bv-turquoise);
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            font-weight: 600;
+            color: var(--bv-navy);
+            cursor: pointer;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .checkbox-item:hover {
+            background-color: var(--bv-bg);
+        }
+
+        .checkbox-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 2px solid #ccc;
+            margin-right: 8px;
+            display: grid;
+            place-items: center;
+        }
+
+        .checkbox-item input {
+            display: none;
+        }
+
+        .checkbox-item input:checked+.checkbox-box {
+            background-color: var(--bv-navy);
+            border-color: var(--bv-navy);
+        }
+
+        .checkbox-item input:checked+.checkbox-box::after {
+            content: '✓';
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        /* Checkbox Colors */
+        .cb-closing input:checked+.checkbox-box {
+            background: var(--cat-closing);
+            border-color: var(--cat-closing);
+        }
+
+        .cb-fpa input:checked+.checkbox-box {
+            background: var(--cat-fpa);
+            border-color: var(--cat-fpa);
+        }
+
+        .cb-tax input:checked+.checkbox-box {
+            background: var(--cat-tax);
+            border-color: var(--cat-tax);
+        }
+
+        .cb-treasury input:checked+.checkbox-box {
+            background: var(--cat-treasury);
+            border-color: var(--cat-treasury);
+        }
+
+        .cb-gov input:checked+.checkbox-box {
+            background: var(--cat-gov);
+            border-color: var(--cat-gov);
+        }
+
+        .cb-control input:checked+.checkbox-box {
+            background: var(--cat-control);
+            border-color: var(--cat-control);
+        }
+
+        .checkbox-label {
+            font-size: 0.85rem;
+            color: #444;
+        }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            /* Scrollable area */
+            background-color: #f0f2f5;
+            position: relative;
+        }
+
+        /* The container we want to capture/print */
+        .calendar-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            border: 1px solid var(--bv-border);
+        }
+
+        /* Grid Header */
+        .grid-header {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--bv-border);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .header-day {
+            padding: 15px;
+            text-align: center;
+            color: var(--bv-navy);
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        /* Grid Body */
+        .grid-body {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            flex: 1;
+            /* Auto rows ensures expansion */
+            grid-auto-rows: 1fr;
+        }
+
+        .day-cell {
+            border-right: 1px solid var(--bv-border);
+            border-bottom: 1px solid var(--bv-border);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: 140px;
+        }
+
+        .day-cell.weekend {
+            display: none;
+            /* Hide if generated by mistake */
+        }
+
+        .day-cell:nth-child(5n) {
+            border-right: none;
+        }
+
+        .day-cell.other-month {
+            background-color: #fcfcfc;
+            opacity: 0.5;
+        }
+
+        .day-cell.today {
+            background-color: rgba(0, 174, 199, 0.03);
+        }
+
+        .day-num {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: var(--bv-text);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+        }
+
+        .day-cell.today .day-num {
+            color: var(--bv-turquoise);
+        }
+
+        .day-cell.past-day {
+            background-color: #f4f4f4;
+        }
+
+        .day-cell.today {
+            background-color: rgba(0, 174, 199, 0.05);
+            border: 2px solid var(--bv-turquoise);
+        }
+
+        /* Chips */
+        .events-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .chip {
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            line-height: 1.2;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chip:hover {
+            transform: translateX(2px);
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Chip Colors - More Vibrant */
+        .chip {
+            color: white;
+            border-left: 4px solid rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+        }
+
+        .chip span {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .scope-dot {
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            flex-shrink: 0;
+        }
+
+        /* Category Styles */
+        .cat-closing {
+            background: var(--cat-closing);
+            border-left: 3px solid #C0392B;
+        }
+
+        .cat-fpa {
+            background: var(--cat-fpa);
+            border-left: 3px solid #008B9F;
+        }
+
+        .cat-tax {
+            background: var(--cat-tax);
+            border-left: 3px solid #D35400;
+        }
+
+        .cat-treasury {
+            background: var(--cat-treasury);
+            border-left: 3px solid #8E44AD;
+        }
+
+        .cat-gov {
+            background: var(--cat-gov);
+            border-left: 3px solid #000066;
+        }
+
+        .cat-control {
+            background: var(--cat-control);
+            border-left: 3px solid #1E8449;
+        }
+
+        .cat-holiday {
+            background: repeating-linear-gradient(45deg,
+                    #ffffff,
+                    #ffffff 10px,
+                    #f0f0f0 10px,
+                    #f0f0f0 20px);
+            border: 1px solid #ccc;
+            color: #555;
+            border-left: 4px solid #999;
+        }
+
+        .cat-holiday .scope-dot {
+            background: #777;
+        }
+
+
+        /* List View */
+        .list-view {
+            display: none;
+            padding: 20px;
+        }
+
+        /* List View Improved */
+        .list-view {
+            display: none;
+            padding: 20px;
+        }
+
+        .list-row {
+            display: grid;
+            grid-template-columns: 120px 60px 100px 1fr;
+            gap: 15px;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            transition: all 0.2s;
+        }
+
+        .list-row:hover {
+            background: #f8f8f8;
+        }
+
+        .list-date {
+            width: 140px;
+            font-weight: 700;
+            color: var(--bv-navy);
+        }
+
+        .list-scope {
+            width: 60px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #666;
+        }
+
+        .list-body {
+            flex: 1;
+        }
+
+        .list-time {
+            font-size: 0.75rem;
+            color: #888;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .list-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            color: white;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        /* Print Header (Hidden normally) */
+        .print-header {
+            display: none;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--bv-navy);
+        }
+
+        /* --- EXPORT TWEAKS --- */
+        @media print {
+            @page {
+                size: landscape;
+                margin: 5mm;
+            }
+
+            body {
+                height: auto;
+                overflow: visible;
+                background: white;
+            }
+
+            header,
+            aside,
+            .header-controls,
+            .no-print {
+                display: none !important;
+            }
+
+            main {
+                padding: 0;
+                height: auto;
+                overflow: visible;
+            }
+
+            .calendar-container {
+                border: none;
+                box-shadow: none;
+                height: auto;
+                display: block;
+            }
+
+            .grid-body {
+                display: grid;
+            }
+
+            /* Ensure grid layout keeps */
+            .day-cell {
+                min-height: 100px;
+                page-break-inside: avoid;
+                border: 1px solid #ddd;
+            }
+
+            .print-header {
+                display: block !important;
+            }
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: fixed;
+            background: var(--bv-navy);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s;
+            max-width: 250px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #tooltip strong {
+            color: var(--bv-turquoise);
+            display: block;
+            margin-bottom: 3px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- ICONS & SELECTION STYLES --- */
+        .event-icon {
+            margin-right: 5px;
+            min-width: 14px;
+            text-align: center;
+        }
+
+        /* Selection Mode */
+        .chip.selection-mode {
+            cursor: pointer;
+            border: 2px solid transparent;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        .chip.selection-mode:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .chip.selected {
+            border: 2px solid var(--bv-navy);
+            box-shadow: 0 0 8px rgba(0, 4, 158, 0.5);
+            opacity: 1 !important;
+            position: relative;
+        }
+
+        .chip.selected::after {
+            content: '✓';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--bv-navy);
+            color: white;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid white;
+        }
+
+        /* Action Bar for Selection */
+        .selection-bar {
+            display: none;
+            background: var(--bv-navy);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            align-items: center;
+            gap: 10px;
+            margin-right: 10px;
+            font-size: 0.85rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-small {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-clear {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-exp {
+            background: var(--bv-turquoise);
+            color: white;
+        }
+
+        .btn-exp:hover {
+            background: #0097ad;
+        }
+
+        /* Multi-Select Styles */
+        .custom-select-wrapper {
+            position: relative;
+            user-select: none;
+        }
+
+        .custom-select-header {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--bv-navy);
+        }
+
+        .custom-select-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 200;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 5px;
+        }
+
+        .custom-select-list.open {
+            display: block;
+        }
+
+        /* High Visibility Selection */
+        body.selection-active .chip:not(.selected),
+        body.selection-active .list-row:not(.selected-row) {
+            opacity: 0.3;
+            filter: grayscale(0.8);
+        }
+
+        .list-row.selected-row {
+            background: rgba(0, 4, 158, 0.15) !important;
+            border-left: 4px solid #FFD700 !important;
+            /* Gold border */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* User Guide Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            border-radius: 12px;
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .guide-item h4 {
+            color: var(--bv-navy);
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--bv-turquoise);
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+
+        .guide-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .guide-chip {
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="tooltip" style="opacity: 0; left: 824px; top: 320px;"><strong>IC Recon</strong>IC Reconciliation Last Extraction</div>
+
+    <header>
+        <div class="header-left">
+            <img src="https://jrisueno74.github.io/RESOURCES_BV/LOGO%20WHITE.png" alt="BV Logo" class="logo" onerror="this.style.display='none'">
+            <div class="app-title">
+                <span>EUROPE FINANCE CALENDAR</span>
+                <small>Group &amp; Europe Region</small>
+            </div>
+        </div>
+        <div class="header-controls">
+            <button class="btn btn-secondary" onclick="openSettings()" style="padding:6px 10px"><i class="fa-solid fa-gear"></i></button>
+            <button class="btn btn-secondary" onclick="openGuide()">❓ Help</button>
+            <!-- Selection Controls -->
+            <div id="selectionBar" class="selection-bar">
+                <span id="selectedCount" style="font-weight:700; min-width:80px">0 selected</span>
+                <div style="height:20px; width:1px; background:rgba(255,255,255,0.3)"></div>
+                <button class="btn-small btn-clear" onclick="selectAll('month')">All Month</button>
+                <button class="btn-small btn-clear" onclick="selectAll('all')">All Filtered</button>
+                <div style="height:20px; width:1px; background:rgba(255,255,255,0.3)"></div>
+                <button class="btn-small btn-exp" onclick="exportICS()">📥 Download .ics</button>
+                <button class="btn-small btn-clear" onclick="clearSelection()">✖</button>
+            </div>
+
+            <button class="btn btn-secondary" id="btnSelectMode" onclick="toggleSelectionMode()">
+                <span>✅</span> Select
+            </button>
+            <div class="month-nav" style="display: flex;">
+                <button class="nav-arrow" onclick="changeMonth(-1)">❮</button>
+                <div class="current-date-display" id="displayMonth">February 2026</div>
+                <button class="nav-arrow" onclick="changeMonth(1)">❯</button>
+            </div>
+
+            <button class="btn btn-secondary" onclick="toggleView()">
+                <span id="viewIcon">📋</span> <span id="viewText">List View</span>
+            </button>
+            <button class="btn btn-secondary" id="btnYearView" style="display:none" onclick="toggleListMode()">
+                <span>📅</span> <span id="listModeText">Current Month</span>
+            </button>
+
+            <button class="btn btn-secondary" onclick="exportPNG()">
+                <span>📷</span> PNG
+            </button>
+
+            <button class="btn btn-primary" onclick="window.print()">
+                <span>🖨️</span> PDF
+            </button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside>
+            <div class="filter-section">
+                <h3>Country Holidays</h3>
+                <!-- Multi-Select Countries -->
+                <div class="custom-select-wrapper">
+                    <div class="custom-select-header" onclick="toggleCountryDropdown()">
+                        <span id="countryHeaderTitle">Select Countries</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="custom-select-list" id="countryList"><label class="checkbox-item"><input type="checkbox" value="All" onchange="toggleCountry('All')"><span class="checkbox-box"></span> Select All</label>
+                        <div style="height:1px; background:#eee; margin:5px 0"></div><label class="checkbox-item">
+                            <input type="checkbox" value="Albania" onchange="toggleCountry('Albania')">
+                            <span class="checkbox-box"></span> Albania
+                         </label><label class="checkbox-item">
+                            <input type="checkbox" value="Austria" onchange="toggleCountry('Austria')">
+                            <span class="checkbox-box"></span> Austria
+                         </label><label class="checkbox-item">
+                            <input type="checkbox" value="Belgium" onchange="toggleCountry('Belgium')">
+                            <span class="checkbox-box"></span> Belgium
+                         </label><label class="checkbox-item">
+                            <input type="checkbox" value="France" onchange="toggleCountry('France')">
+                            <span class="checkbox-box"></span> France
+                         </label><label class="checkbox-item">
+                            <input type="checkbox" value="Germany" onchange="toggleCountry('Germany')">
+                            <span class="checkbox-box"></span> Germany
+                         </label><label class="checkbox-item">
+                            <input type="checkbox" value="Italy" onchange="toggleCountry('Italy')">
+                            <span class="checkbox-box"></span> Italy
+                         </label><label class="checkbox-item">
+                            <input type="checkbox" value="Netherlands" onchange="toggleCountry('Netherlands')">
+                            <span class="checkbox-box"></span> Netherlands
+                         </label><label class="checkbox-item">
+                            <input type="checkbox" value="Poland" onchange="toggleCountry('Poland')">
+                            <span class="checkbox-box"></span> Poland
+                         </label><label class="checkbox-item">
+                            <input type="checkbox" value="Portugal" onchange="toggleCountry('Portugal')">
+                            <span class="checkbox-box"></span> Portugal
+                         </label><label class="checkbox-item">
+                            <input type="checkbox" value="Spain" checked="" onchange="toggleCountry('Spain')">
+                            <span class="checkbox-box"></span> Spain
+                         </label><label class="checkbox-item">
+                            <input type="checkbox" value="United Kingdom" onchange="toggleCountry('United Kingdom')">
+                            <span class="checkbox-box"></span> United Kingdom
+                         </label></div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Event Scope</h3>
+                <label class="checkbox-item cb-scope">
+                    <input type="checkbox" checked="" onchange="toggleScope('GRP')">
+                    <span class="checkbox-box"></span>
+                    <span class="checkbox-label">🌐 Group Deadlines</span>
+                </label>
+                <label class="checkbox-item cb-scope">
+                    <input type="checkbox" checked="" onchange="toggleScope('EUR')">
+                    <span class="checkbox-box"></span>
+                    <span class="checkbox-label">🇪🇺 Europe Region</span>
+                </label>
+            </div>
+
+            <div class="filter-section">
+                <h3>Process</h3>
+                <label class="checkbox-item cb-closing">
+                    <input type="checkbox" checked="" onchange="toggleCat('closing')">
+                    <span class="checkbox-box"></span>
+                    <span class="checkbox-label">Closing &amp; Conso</span>
+                </label>
+                <label class="checkbox-item cb-fpa">
+                    <input type="checkbox" checked="" onchange="toggleCat('fpa')">
+                    <span class="checkbox-box"></span>
+                    <span class="checkbox-label">FP&amp;A / Budget</span>
+                </label>
+                <label class="checkbox-item cb-gov">
+                    <input type="checkbox" checked="" onchange="toggleCat('gov')">
+                    <span class="checkbox-box"></span>
+                    <span class="checkbox-label">Governance / Meetings</span>
+                </label>
+                <label class="checkbox-item cb-tax">
+                    <input type="checkbox" checked="" onchange="toggleCat('tax')">
+                    <span class="checkbox-box"></span>
+                    <span class="checkbox-label">Tax Reporting</span>
+                </label>
+                <label class="checkbox-item cb-treasury">
+                    <input type="checkbox" checked="" onchange="toggleCat('treasury')">
+                    <span class="checkbox-box"></span>
+                    <span class="checkbox-label">Treasury</span>
+                </label>
+                <label class="checkbox-item cb-control">
+                    <input type="checkbox" checked="" onchange="toggleCat('control')">
+                    <span class="checkbox-box"></span>
+                    <span class="checkbox-label">Internal Control</span>
+                </label>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main>
+            <div class="print-header">
+                <h1 id="printTitle">EUROPE FINANCE CALENDAR - FEBRUARY 2026</h1>
+            </div>
+
+            <div id="captureArea" class="calendar-container">
+                <!-- Grid View -->
+                <div id="gridView" style="height:100%; display:flex; flex-direction:column;">
+                    <div class="grid-header">
+                        <div class="header-day">Monday</div>
+                        <div class="header-day">Tuesday</div>
+                        <div class="header-day">Wednesday</div>
+                        <div class="header-day">Thursday</div>
+                        <div class="header-day">Friday</div>
+                    </div>
+                    <div class="grid-body" id="gridContent"><div class="day-cell other-month"><div class="day-num"><span>26</span></div><div class="events-stack"><div class="chip cat-control"><i class="fa-solid fa-shield-halved event-icon"></i><span>Guard Control</span></div></div></div><div class="day-cell other-month"><div class="day-num"><span>27</span></div><div class="events-stack"></div></div><div class="day-cell other-month"><div class="day-num"><span>28</span></div><div class="events-stack"></div></div><div class="day-cell other-month"><div class="day-num"><span>29</span></div><div class="events-stack"><div class="chip cat-closing"><i class="fa-solid fa-lock event-icon"></i><span>IC Accruals</span></div></div></div><div class="day-cell other-month"><div class="day-num"><span>30</span></div><div class="events-stack"></div></div><div class="day-cell past-day"><div class="day-num"><span>2</span></div><div class="events-stack"><div class="chip cat-fpa"><i class="fa-solid fa-chart-line event-icon"></i><span>Revenue EUR</span></div></div></div><div class="day-cell past-day"><div class="day-num"><span>3</span></div><div class="events-stack"><div class="chip cat-fpa"><i class="fa-solid fa-chart-line event-icon"></i><span>Rev AD22</span></div></div></div><div class="day-cell past-day"><div class="day-num"><span>4</span></div><div class="events-stack"><div class="chip cat-closing"><i class="fa-solid fa-lock event-icon"></i><span>IC Recon</span></div></div></div><div class="day-cell past-day"><div class="day-num"><span>5</span></div><div class="events-stack"><div class="chip cat-fpa"><i class="fa-solid fa-chart-line event-icon"></i><span>P&amp;L AD50</span></div></div></div><div class="day-cell past-day"><div class="day-num"><span>6</span></div><div class="events-stack"><div class="chip cat-control"><i class="fa-solid fa-shield-halved event-icon"></i><span>XCERT Open</span></div></div></div><div class="day-cell"><div class="day-num"><span>9</span></div><div class="events-stack"></div></div><div class="day-cell"><div class="day-num"><span>10</span></div><div class="events-stack"></div></div><div class="day-cell"><div class="day-num"><span>11</span></div><div class="events-stack"><div class="chip cat-gov"><i class="fa-solid fa-gavel event-icon"></i><span>EUR Leadership</span></div></div></div><div class="day-cell"><div class="day-num"><span>12</span></div><div class="events-stack"><div class="chip cat-gov"><i class="fa-solid fa-gavel event-icon"></i><span>EUR Leadership</span></div><div class="chip cat-gov"><i class="fa-solid fa-gavel event-icon"></i><span>HO ExCom Call</span></div></div></div><div class="day-cell"><div class="day-num"><span>13</span></div><div class="events-stack"><div class="chip cat-fpa"><i class="fa-solid fa-chart-line event-icon"></i><span>Landing</span></div></div></div><div class="day-cell"><div class="day-num"><span>16</span></div><div class="events-stack"></div></div><div class="day-cell"><div class="day-num"><span>17</span></div><div class="events-stack"></div></div><div class="day-cell"><div class="day-num"><span>18</span></div><div class="events-stack"></div></div><div class="day-cell"><div class="day-num"><span>19</span></div><div class="events-stack"></div></div><div class="day-cell"><div class="day-num"><span>20</span></div><div class="events-stack"><div class="chip cat-treasury"><i class="fa-solid fa-coins event-icon"></i><span>IC Settlement</span></div></div></div><div class="day-cell"><div class="day-num"><span>23</span></div><div class="events-stack"></div></div><div class="day-cell"><div class="day-num"><span>24</span></div><div class="events-stack"></div></div><div class="day-cell"><div class="day-num"><span>25</span></div><div class="events-stack"><div class="chip cat-gov"><i class="fa-solid fa-gavel event-icon"></i><span>FY25 Release</span></div></div></div><div class="day-cell"><div class="day-num"><span>26</span></div><div class="events-stack"><div class="chip cat-closing"><i class="fa-solid fa-lock event-icon"></i><span>IC Accruals</span></div></div></div><div class="day-cell"><div class="day-num"><span>27</span></div><div class="events-stack"></div></div><div class="day-cell other-month"><div class="day-num"><span>2</span></div><div class="events-stack"><div class="chip cat-fpa"><i class="fa-solid fa-chart-line event-icon"></i><span>Revenue EUR</span></div></div></div><div class="day-cell other-month"><div class="day-num"><span>3</span></div><div class="events-stack"><div class="chip cat-fpa"><i class="fa-solid fa-chart-line event-icon"></i><span>Rev AD22</span></div><div class="chip cat-closing"><i class="fa-solid fa-lock event-icon"></i><span>IC Recon</span></div><div class="chip cat-tax"><i class="fa-solid fa-scale-balanced event-icon"></i><span>Flash Tax</span></div></div></div><div class="day-cell other-month"><div class="day-num"><span>4</span></div><div class="events-stack"><div class="chip cat-closing"><i class="fa-solid fa-lock event-icon"></i><span>Flash18</span></div></div></div><div class="day-cell other-month"><div class="day-num"><span>5</span></div><div class="events-stack"><div class="chip cat-fpa"><i class="fa-solid fa-chart-line event-icon"></i><span>P&amp;L AD50</span></div></div></div><div class="day-cell other-month"><div class="day-num"><span>6</span></div><div class="events-stack"></div></div></div>
+                </div>
+
+                <!-- List View -->
+                <div id="listView" class="list-view" style="display: none;">
+                    <!-- JS Injected -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- User Guide Modal -->
+    <div id="guideModal" class="modal-overlay" onclick="closeGuide(event)">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeGuide(null)">×</span>
+            <h2 style="color:var(--bv-navy); margin-bottom:5px">📅 User Guide</h2>
+            <p style="color:#666">Welcome to the Europe Finance Calendar. Here is how to use it.</p>
+
+            <div class="guide-grid">
+                <div class="guide-item">
+                    <h4>🏷️ Event Categories</h4>
+                    <div class="guide-legend">
+                        <div class="guide-chip" style="background:var(--cat-closing)"><i class="fa-solid fa-lock"></i>
+                            Closing</div>
+                        <div class="guide-chip" style="background:var(--cat-fpa)"><i class="fa-solid fa-chart-line"></i>
+                            FP&amp;A</div>
+                        <div class="guide-chip" style="background:var(--cat-tax)"><i class="fa-solid fa-scale-balanced"></i> Tax</div>
+                        <div class="guide-chip" style="background:var(--cat-treasury)"><i class="fa-solid fa-coins"></i>
+                            Treasury</div>
+                        <div class="guide-chip" style="background:var(--cat-gov)"><i class="fa-solid fa-gavel"></i>
+                            Governance</div>
+                        <div class="guide-chip" style="background:var(--cat-control)"><i class="fa-solid fa-shield-halved"></i> Control</div>
+                    </div>
+                    <p style="font-size:0.9rem; margin-top:10px; color:#555">Use the sidebar checkboxes to filter
+                        specific event types.</p>
+                </div>
+
+                <div class="guide-item">
+                    <h4>✅ Selection Mode</h4>
+                    <p style="font-size:0.9rem; color:#555">
+                        Click the <strong>"✅ Select"</strong> button in the header to enter selection mode.<br><br>
+                        • Click events to select them (they turn gold).<br>
+                        • Use "All Month" to select everything visible.<br>
+                        • Use "Download .ics" to export selected events to Outlook.
+                    </p>
+                </div>
+
+                <div class="guide-item">
+                    <h4>🌍 Multi-Country Holidays</h4>
+                    <p style="font-size:0.9rem; color:#555">
+                        Click the <strong>"Select Countries"</strong> dropdown in the sidebar.<br>
+                        You can select multiple countries (e.g. Spain + France) to see all their bank holidays
+                        simultaneously.
+                        <br><em>Note: Weekend holidays are hidden.</em>
+                    </p>
+                </div>
+
+                <div class="guide-item">
+                    <h4>📋 List View &amp; Year View</h4>
+                    <p style="font-size:0.9rem; color:#555">
+                        Toggle between <strong>Grid</strong> and <strong>List</strong> views using the top button.<br>
+                        In List View, use the <strong>"Full Year"</strong> button to see all events for 2026 in a single
+                        scrolling list.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    
+    
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal-overlay" onclick="closeSettings(event)" style="display: none;">
+        <div class="modal-content" style="max-width:500px">
+            <span class="close-modal" onclick="closeSettings(null)">×</span>
+            <h2 style="color:var(--bv-navy); margin-bottom:20px">⚙️ Administration</h2>
+
+            <div class="setting-group" style="margin-bottom:25px">
+                <label style="display:block; font-weight:700; margin-bottom:5px">📅 Calendar Titles</label>
+                <div style="display:flex; flex-direction:column; gap:10px">
+                    <input type="text" id="appTitleInput" placeholder="Main Title (e.g. FINANCE CALENDAR)" style="padding:8px; border:1px solid #ccc; border-radius:4px">
+                    <input type="text" id="appSubtitleInput" placeholder="Subtitle (e.g. Group &amp; Europe Region)" style="padding:8px; border:1px solid #ccc; border-radius:4px">
+                    <button class="btn btn-primary" onclick="updateTitle()" style="align-self:flex-start">Update
+                        Titles</button>
+                </div>
+            </div>
+
+            <div class="setting-group" style="margin-bottom:25px; padding-top:20px; border-top:1px solid #eee">
+                <label style="display:block; font-weight:700; margin-bottom:5px">📥 Import / Export Data</label>
+                <p style="font-size:0.85rem; color:#666; margin-bottom:10px">Download current data to Excel, edit it,
+                    and upload to update.</p>
+                <div style="display:flex; gap:10px; margin-bottom:10px">
+                    <button class="btn btn-secondary" onclick="exportToExcel()" style="display:inline-flex; align-items:center; gap:5px; background:white; color:var(--bv-navy); border:1px solid var(--bv-navy)">
+                        <i class="fa-solid fa-file-excel"></i> Download Data (Template)
+                    </button>
+                    <label class="btn btn-secondary" style="cursor:pointer; display:inline-flex; align-items:center; gap:5px; background:var(--bv-navy); color:white">
+                        <i class="fa-solid fa-upload"></i> Import Excel
+                        <input type="file" id="importExcelInput" accept=".xlsx" style="display:none" onchange="importFromExcel(this)">
+                    </label>
+                </div>
+            </div>
+
+            <div class="setting-group" style="margin-bottom:10px; padding-top:20px; border-top:1px solid #eee">
+                <label style="display:block; font-weight:700; margin-bottom:5px">💾 Save Application</label>
+                <p style="font-size:0.85rem; color:#666; margin-bottom:10px">Save a new version of this HTML file with
+                    all current data changes baked in.</p>
+                <button class="btn btn-primary" onclick="saveHTML()"><i class="fa-solid fa-download"></i> Save New App
+                    Version</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA SOURCE ---
+        let appTitleBase = "EUROPE FINANCE CALENDAR";
+        let appSubtitleBase = "Group & Europe Region";
+        // (Legacy rawHolidays removed - using injected JSON)
+        // (Legacy rawHolidays removed - using injected JSON)
+
+        /* 
+           DATA MAPPING:
+           Scope: GRP (Group) or EUR (Europe)
+           Category: closing, fpa, gov, tax, treasury, control
+        */
+        const eventsData = [
+    {
+        "d": "2026-01-12",
+        "t": "MBR EUR",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Monthly Business Review (15:00-18:00 CET)",
+        "id": "evt_0"
+    },
+    {
+        "d": "2026-01-15",
+        "t": "Digital SteerCo",
+        "c": "gov",
+        "s": "GRP",
+        "desc": "Finance Digital SteerCo",
+        "id": "evt_1"
+    },
+    {
+        "d": "2026-01-16",
+        "t": "Req. New Entities",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "FLEX & Tableau Requests due",
+        "id": "evt_2"
+    },
+    {
+        "d": "2026-01-22",
+        "t": "IC Settlement",
+        "c": "treasury",
+        "s": "GRP",
+        "desc": "Intercompany Settlement Date",
+        "id": "evt_3"
+    },
+    {
+        "d": "2026-01-23",
+        "t": "Closing IG",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "Closing of Intragroup Invoicing & NOAC",
+        "id": "evt_4"
+    },
+    {
+        "d": "2026-01-26",
+        "t": "Guard Control",
+        "c": "control",
+        "s": "GRP",
+        "desc": "Guard control approval deadline",
+        "id": "evt_5"
+    },
+    {
+        "d": "2026-01-29",
+        "t": "IC Accruals",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "Last day for IC Accruals",
+        "id": "evt_6"
+    },
+    {
+        "d": "2026-02-02",
+        "t": "Revenue EUR",
+        "c": "fpa",
+        "s": "EUR",
+        "desc": "Revenue EUR Deadline (6pm CET)",
+        "id": "evt_7"
+    },
+    {
+        "d": "2026-02-03",
+        "t": "Rev AD22",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Revenue AD22",
+        "id": "evt_8"
+    },
+    {
+        "d": "2026-02-04",
+        "t": "IC Recon",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "IC Reconciliation Last Extraction",
+        "id": "evt_9"
+    },
+    {
+        "d": "2026-02-05",
+        "t": "P&L AD50",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Full P&L and Cash Flow AD50",
+        "id": "evt_10"
+    },
+    {
+        "d": "2026-02-06",
+        "t": "XCERT Open",
+        "c": "control",
+        "s": "GRP",
+        "desc": "XCERT Process Opening",
+        "id": "evt_11"
+    },
+    {
+        "d": "2026-02-11",
+        "t": "EUR Leadership",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Kick-Off Malta (Day 1)",
+        "id": "evt_12"
+    },
+    {
+        "d": "2026-02-12",
+        "t": "EUR Leadership",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Kick-Off Malta (Day 2)",
+        "id": "evt_13"
+    },
+    {
+        "d": "2026-02-12",
+        "t": "HO ExCom Call",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Vincent B. / Augusto L.",
+        "id": "evt_14"
+    },
+    {
+        "d": "2026-02-13",
+        "t": "Landing",
+        "c": "fpa",
+        "s": "EUR",
+        "desc": "Landing / FQ / Budget Process",
+        "id": "evt_15"
+    },
+    {
+        "d": "2026-02-20",
+        "t": "IC Settlement",
+        "c": "treasury",
+        "s": "GRP",
+        "desc": "Intercompany Settlement Date",
+        "id": "evt_16"
+    },
+    {
+        "d": "2026-02-25",
+        "t": "FY25 Release",
+        "c": "gov",
+        "s": "GRP",
+        "desc": "FY 2025 Financial Release",
+        "id": "evt_17"
+    },
+    {
+        "d": "2026-02-26",
+        "t": "IC Accruals",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "Last day for IC Accruals",
+        "id": "evt_18"
+    },
+    {
+        "d": "2026-03-02",
+        "t": "Revenue EUR",
+        "c": "fpa",
+        "s": "EUR",
+        "desc": "Revenue EUR Deadline (6pm CET)",
+        "id": "evt_19"
+    },
+    {
+        "d": "2026-03-03",
+        "t": "Rev AD22",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Revenue AD22 Group Deadline",
+        "id": "evt_20"
+    },
+    {
+        "d": "2026-03-03",
+        "t": "IC Recon",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "IC Reconciliation",
+        "id": "evt_21"
+    },
+    {
+        "d": "2026-03-03",
+        "t": "Flash Tax",
+        "c": "tax",
+        "s": "GRP",
+        "desc": "Flash Tax Submission",
+        "id": "evt_22"
+    },
+    {
+        "d": "2026-03-04",
+        "t": "Flash18",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "SAP FC Magnitude Flash18 Bundle",
+        "id": "evt_23"
+    },
+    {
+        "d": "2026-03-05",
+        "t": "P&L AD50",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Full P&L and Cash Flow AD50",
+        "id": "evt_24"
+    },
+    {
+        "d": "2026-03-09",
+        "t": "Biz Reviews FQ1",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "IN PERSON France: FCE BNI (09h, 11:30h), FCE IND (14h), FCE CER (16h)",
+        "id": "evt_25"
+    },
+    {
+        "d": "2026-03-10",
+        "t": "Biz Reviews FQ1",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "TEAMS: IBERIA (09h), NEE (13h)",
+        "id": "evt_26"
+    },
+    {
+        "d": "2026-03-10",
+        "t": "MBR EUR",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Monthly Business Review (15:00-18:00 CET)",
+        "id": "evt_27"
+    },
+    {
+        "d": "2026-03-11",
+        "t": "Biz Reviews FQ1",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "TEAMS: UK&I (09h), SEE (14h)",
+        "id": "evt_28"
+    },
+    {
+        "d": "2026-03-11",
+        "t": "Fin. Webcast",
+        "c": "gov",
+        "s": "GRP",
+        "desc": "Finance Leaders Webcast",
+        "id": "evt_29"
+    },
+    {
+        "d": "2026-03-12",
+        "t": "HO ExCom Call",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Vincent B. / Augusto L.",
+        "id": "evt_30"
+    },
+    {
+        "d": "2026-03-12",
+        "t": "Forecast Upload",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Forecast Uploads Deadline (Q1)",
+        "id": "evt_31"
+    },
+    {
+        "d": "2026-03-16",
+        "t": "Group Biz Revs",
+        "c": "gov",
+        "s": "GRP",
+        "desc": "Group Business Reviews Start",
+        "id": "evt_32"
+    },
+    {
+        "d": "2026-03-17",
+        "t": "New Entities",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "Creation of New Entities",
+        "id": "evt_33"
+    },
+    {
+        "d": "2026-03-19",
+        "t": "HO Biz Review",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Region ExCom (09:00 - 10:30)",
+        "id": "evt_34"
+    },
+    {
+        "d": "2026-03-24",
+        "t": "Flash Tax Avail",
+        "c": "tax",
+        "s": "GRP",
+        "desc": "Flash Tax Available",
+        "id": "evt_35"
+    },
+    {
+        "d": "2026-03-24",
+        "t": "Closing IG",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "Closing Intragroup",
+        "id": "evt_36"
+    },
+    {
+        "d": "2026-03-25",
+        "t": "IC Settlement",
+        "c": "treasury",
+        "s": "GRP",
+        "desc": "Intercompany Settlement",
+        "id": "evt_37"
+    },
+    {
+        "d": "2026-03-26",
+        "t": "Guard Control",
+        "c": "control",
+        "s": "GRP",
+        "desc": "Guard Control Approval",
+        "id": "evt_38"
+    },
+    {
+        "d": "2026-03-27",
+        "t": "Bank Inv",
+        "c": "treasury",
+        "s": "GRP",
+        "desc": "Bank Account Inventory Q1",
+        "id": "evt_39"
+    },
+    {
+        "d": "2026-03-30",
+        "t": "IC Accruals",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "Last day for IC Accruals",
+        "id": "evt_40"
+    },
+    {
+        "d": "2026-04-01",
+        "t": "EUR Guide",
+        "c": "fpa",
+        "s": "EUR",
+        "desc": "Europe Guidelines (TBC)",
+        "id": "evt_41"
+    },
+    {
+        "d": "2026-04-02",
+        "t": "Rev AD22",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Revenue AD22",
+        "id": "evt_42"
+    },
+    {
+        "d": "2026-04-06",
+        "t": "IC Recon",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "IC Reconciliation",
+        "id": "evt_43"
+    },
+    {
+        "d": "2026-04-07",
+        "t": "P&L AD50",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Full P&L AD50",
+        "id": "evt_44"
+    },
+    {
+        "d": "2026-04-09",
+        "t": "Conso & Tax",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "Consolidation & Tax Reporting",
+        "id": "evt_45"
+    },
+    {
+        "d": "2026-04-13",
+        "t": "MBR EUR",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Monthly Business Review (15:00-18:00 CET)",
+        "id": "evt_46"
+    },
+    {
+        "d": "2026-04-14",
+        "t": "HO ExCom Call",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Vincent B. / Augusto L.",
+        "id": "evt_47"
+    },
+    {
+        "d": "2026-04-22",
+        "t": "Q1 Rev Release",
+        "c": "gov",
+        "s": "GRP",
+        "desc": "Q1 2026 Revenue Release",
+        "id": "evt_48"
+    },
+    {
+        "d": "2026-05-05",
+        "t": "Rev AD22",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Revenue AD22",
+        "id": "evt_49"
+    },
+    {
+        "d": "2026-05-05",
+        "t": "Flash Tax",
+        "c": "tax",
+        "s": "GRP",
+        "desc": "Flash Tax Package Submission",
+        "id": "evt_50"
+    },
+    {
+        "d": "2026-05-06",
+        "t": "XCERT Open",
+        "c": "control",
+        "s": "GRP",
+        "desc": "XCERT Process Opening",
+        "id": "evt_51"
+    },
+    {
+        "d": "2026-05-07",
+        "t": "P&L AD50",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Full P&L AD50",
+        "id": "evt_52"
+    },
+    {
+        "d": "2026-05-12",
+        "t": "MBR EUR",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Monthly Business Review (15:00-18:00 CET)",
+        "id": "evt_53"
+    },
+    {
+        "d": "2026-05-13",
+        "t": "HO ExCom Call",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Vincent B. / Augusto L.",
+        "id": "evt_54"
+    },
+    {
+        "d": "2026-05-21",
+        "t": "Group Fin Com",
+        "c": "gov",
+        "s": "GRP",
+        "desc": "Group Finance Committee",
+        "id": "evt_55"
+    },
+    {
+        "d": "2026-06-02",
+        "t": "Rev AD22",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Revenue AD22",
+        "id": "evt_56"
+    },
+    {
+        "d": "2026-06-03",
+        "t": "IC Recon",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "IC Reconciliation",
+        "id": "evt_57"
+    },
+    {
+        "d": "2026-06-04",
+        "t": "P&L AD50",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Full P&L AD50",
+        "id": "evt_58"
+    },
+    {
+        "d": "2026-06-05",
+        "t": "REV & OP EUR",
+        "c": "fpa",
+        "s": "EUR",
+        "desc": "Revenue & OP Europe Output",
+        "id": "evt_59"
+    },
+    {
+        "d": "2026-06-08",
+        "t": "Biz Reviews FQ2",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "IN PERSON Paris: FCE BNI (09h, 11:30h), FCE IND (14h), FCE CER (16h)",
+        "id": "evt_60"
+    },
+    {
+        "d": "2026-06-09",
+        "t": "Biz Reviews FQ2",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "IBERIA (09h), NEE (13h)",
+        "id": "evt_61"
+    },
+    {
+        "d": "2026-06-10",
+        "t": "Biz Reviews FQ2",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "UK&I (09h), SEE (13h)",
+        "id": "evt_62"
+    },
+    {
+        "d": "2026-06-11",
+        "t": "Fcst Deadline",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Forecast Uploads Deadline (Q2)",
+        "id": "evt_63"
+    },
+    {
+        "d": "2026-06-15",
+        "t": "MBR EUR",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Monthly Business Review (15:00-18:00 CET)",
+        "id": "evt_64"
+    },
+    {
+        "d": "2026-06-16",
+        "t": "HO ExCom Call",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Vincent B. / Augusto L.",
+        "id": "evt_65"
+    },
+    {
+        "d": "2026-06-29",
+        "t": "Group Biz Revs",
+        "c": "gov",
+        "s": "GRP",
+        "desc": "Group Business Reviews",
+        "id": "evt_66"
+    },
+    {
+        "d": "2026-07-02",
+        "t": "HO Biz Review",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Region ExCom (09:00 - 11:00)",
+        "id": "evt_67"
+    },
+    {
+        "d": "2026-07-02",
+        "t": "Rev AD22",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Revenue AD22",
+        "id": "evt_68"
+    },
+    {
+        "d": "2026-07-03",
+        "t": "P&L AD50",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Full P&L AD50",
+        "id": "evt_69"
+    },
+    {
+        "d": "2026-07-06",
+        "t": "Conso & Tax",
+        "c": "closing",
+        "s": "GRP",
+        "desc": "Consolidation & Tax Bundle",
+        "id": "evt_70"
+    },
+    {
+        "d": "2026-07-13",
+        "t": "MBR EUR",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Monthly Business Review (15:00-18:00 CET)",
+        "id": "evt_71"
+    },
+    {
+        "d": "2026-09-09",
+        "t": "MBR EUR",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Monthly Business Review (15:00-18:00 CET)",
+        "id": "evt_72"
+    },
+    {
+        "d": "2026-09-10",
+        "t": "HO ExCom Call",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Vincent B. / Augusto L.",
+        "id": "evt_73"
+    },
+    {
+        "d": "2026-09-17",
+        "t": "Bud Pre-Sub",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Budget Pre-submission",
+        "id": "evt_74"
+    },
+    {
+        "d": "2026-09-22",
+        "t": "Grp Fin Com",
+        "c": "gov",
+        "s": "GRP",
+        "desc": "Group Finance Committee",
+        "id": "evt_75"
+    },
+    {
+        "d": "2026-10-08",
+        "t": "MBR EUR",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Monthly Business Review (15:00-18:00 CET)",
+        "id": "evt_76"
+    },
+    {
+        "d": "2026-10-09",
+        "t": "Bud Fin Mtgs",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "IN PERSON France: FCE BNI (09h, 11:30h), FCE IND (14h), FCE CER (16h)",
+        "id": "evt_77"
+    },
+    {
+        "d": "2026-10-09",
+        "t": "HO ExCom Call",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Vincent B. / Augusto L.",
+        "id": "evt_78"
+    },
+    {
+        "d": "2026-10-12",
+        "t": "Bud Fin Mtgs",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "TEAMS: SEE (09h), NEE (13h)",
+        "id": "evt_79"
+    },
+    {
+        "d": "2026-10-13",
+        "t": "Bud Fin Mtgs",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "TEAMS: IBERIA (09h), UK&I (13h)",
+        "id": "evt_80"
+    },
+    {
+        "d": "2026-10-15",
+        "t": "Bud Upload",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Budget Uploads Deadline",
+        "id": "evt_81"
+    },
+    {
+        "d": "2026-10-16",
+        "t": "Bud Valid",
+        "c": "fpa",
+        "s": "GRP",
+        "desc": "Budget Validation OG CFOs",
+        "id": "evt_82"
+    },
+    {
+        "d": "2026-10-21",
+        "t": "Budget Seminar",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "HO PARIS (Afternoon)",
+        "id": "evt_83"
+    },
+    {
+        "d": "2026-10-22",
+        "t": "Budget Seminar",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "HO PARIS (Full Day)",
+        "id": "evt_84"
+    },
+    {
+        "d": "2026-10-23",
+        "t": "Budget Seminar",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "HO PARIS (Morning)",
+        "id": "evt_85"
+    },
+    {
+        "d": "2026-11-09",
+        "t": "MBR EUR",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Monthly Business Review (15:00-18:00 CET)",
+        "id": "evt_86"
+    },
+    {
+        "d": "2026-11-10",
+        "t": "HO ExCom Call",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Vincent B. / Augusto L.",
+        "id": "evt_87"
+    },
+    {
+        "d": "2026-11-19",
+        "t": "Biz & Bud Rev",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Review Meeting (09:00 - 12:00)",
+        "id": "evt_88"
+    },
+    {
+        "d": "2026-12-09",
+        "t": "MBR EUR",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Monthly Business Review (15:00-18:00 CET)",
+        "id": "evt_89"
+    },
+    {
+        "d": "2026-12-10",
+        "t": "HO ExCom Call",
+        "c": "gov",
+        "s": "EUR",
+        "desc": "Vincent B. / Augusto L.",
+        "id": "evt_90"
+    }
+];
+
+
+        // --- STATE & UTILS ---
+        let currentDate = new Date();
+        currentDate.setDate(1);
+
+        let activeView = 'grid'; // 'grid', 'list'
+        let listMode = 'month'; // 'month', 'year'
+
+        let filters = {
+            categories: ['closing', 'fpa', 'tax', 'treasury', 'gov', 'control'],
+            scopes: ['GRP', 'EUR'],
+            countries: ['Spain'] // Changed to array
+        };
+
+        // FULL JSON HOLIDAYS INJECTED FROM PYTHON EXTRACTION
+        const allHolidays = [
+    {
+        "country": "Albania",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-01-02",
+        "name": "New Year's Day (Day 2)"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-03-14",
+        "name": "Summer Day"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-03-22",
+        "name": "Nevruz Day"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-03-20",
+        "name": "Eid al-Fitr (End of Ramadan)"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-04-05",
+        "name": "Catholic Easter Sunday"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-04-06",
+        "name": "Catholic Easter Monday"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-04-12",
+        "name": "Orthodox Easter Sunday"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-04-13",
+        "name": "Orthodox Easter Monday"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-05-01",
+        "name": "International Workers' Day"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-05-27",
+        "name": "Eid al-Adha (Feast of Sacrifice)"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-09-05",
+        "name": "Mother Teresa Beatification Day"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-11-28",
+        "name": "Flag and Independence Day"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-11-29",
+        "name": "Liberation Day"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-12-08",
+        "name": "National Youth Day"
+    },
+    {
+        "country": "Albania",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-01-06",
+        "name": "Epiphany"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-04-06",
+        "name": "Easter Monday"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-05-01",
+        "name": "Labour Day"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-05-14",
+        "name": "Ascension Day"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-05-25",
+        "name": "Whit Monday"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-06-04",
+        "name": "Corpus Christi"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-08-15",
+        "name": "Assumption Day"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-10-26",
+        "name": "National Day"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-11-01",
+        "name": "All Saints' Day"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-12-08",
+        "name": "Immaculate Conception"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "Austria",
+        "date": "2026-12-26",
+        "name": "St. Stephen's Day"
+    },
+    {
+        "country": "Belgium",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "Belgium",
+        "date": "2026-04-06",
+        "name": "Easter Monday"
+    },
+    {
+        "country": "Belgium",
+        "date": "2026-05-01",
+        "name": "Labour Day"
+    },
+    {
+        "country": "Belgium",
+        "date": "2026-05-14",
+        "name": "Ascension Day"
+    },
+    {
+        "country": "Belgium",
+        "date": "2026-05-25",
+        "name": "Whit Monday"
+    },
+    {
+        "country": "Belgium",
+        "date": "2026-07-21",
+        "name": "National Day"
+    },
+    {
+        "country": "Belgium",
+        "date": "2026-08-15",
+        "name": "Assumption Day"
+    },
+    {
+        "country": "Belgium",
+        "date": "2026-11-01",
+        "name": "All Saints' Day"
+    },
+    {
+        "country": "Belgium",
+        "date": "2026-11-11",
+        "name": "Armistice Day"
+    },
+    {
+        "country": "Belgium",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "France",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "France",
+        "date": "2026-04-06",
+        "name": "Easter Monday"
+    },
+    {
+        "country": "France",
+        "date": "2026-05-01",
+        "name": "Labour Day"
+    },
+    {
+        "country": "France",
+        "date": "2026-05-08",
+        "name": "Victory Day 1945"
+    },
+    {
+        "country": "France",
+        "date": "2026-05-14",
+        "name": "Ascension Day"
+    },
+    {
+        "country": "France",
+        "date": "2026-05-25",
+        "name": "Whit Monday"
+    },
+    {
+        "country": "France",
+        "date": "2026-07-14",
+        "name": "Bastille Day"
+    },
+    {
+        "country": "France",
+        "date": "2026-08-15",
+        "name": "Assumption Day"
+    },
+    {
+        "country": "France",
+        "date": "2026-11-01",
+        "name": "All Saints' Day"
+    },
+    {
+        "country": "France",
+        "date": "2026-11-11",
+        "name": "Armistice Day 1918"
+    },
+    {
+        "country": "France",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "Germany",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "Germany",
+        "date": "2026-04-03",
+        "name": "Good Friday"
+    },
+    {
+        "country": "Germany",
+        "date": "2026-04-06",
+        "name": "Easter Monday"
+    },
+    {
+        "country": "Germany",
+        "date": "2026-05-01",
+        "name": "Labour Day"
+    },
+    {
+        "country": "Germany",
+        "date": "2026-05-14",
+        "name": "Ascension Day"
+    },
+    {
+        "country": "Germany",
+        "date": "2026-05-25",
+        "name": "Whit Monday"
+    },
+    {
+        "country": "Germany",
+        "date": "2026-10-03",
+        "name": "German Unity Day"
+    },
+    {
+        "country": "Germany",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "Germany",
+        "date": "2026-12-26",
+        "name": "St. Stephen's Day"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-01-06",
+        "name": "Epiphany"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-04-06",
+        "name": "Easter Monday"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-04-25",
+        "name": "Liberation Day"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-05-01",
+        "name": "Labour Day"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-06-02",
+        "name": "Republic Day"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-08-15",
+        "name": "Assumption Day"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-11-01",
+        "name": "All Saints' Day"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-12-08",
+        "name": "Immaculate Conception"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "Italy",
+        "date": "2026-12-26",
+        "name": "St. Stephen's Day"
+    },
+    {
+        "country": "Netherlands",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "Netherlands",
+        "date": "2026-04-03",
+        "name": "Good Friday"
+    },
+    {
+        "country": "Netherlands",
+        "date": "2026-04-06",
+        "name": "Easter Monday"
+    },
+    {
+        "country": "Netherlands",
+        "date": "2026-04-27",
+        "name": "King's Day"
+    },
+    {
+        "country": "Netherlands",
+        "date": "2026-05-05",
+        "name": "Liberation Day"
+    },
+    {
+        "country": "Netherlands",
+        "date": "2026-05-14",
+        "name": "Ascension Day"
+    },
+    {
+        "country": "Netherlands",
+        "date": "2026-05-25",
+        "name": "Whit Monday"
+    },
+    {
+        "country": "Netherlands",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "Netherlands",
+        "date": "2026-12-26",
+        "name": "Second Day of Christmas"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-01-06",
+        "name": "Epiphany"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-04-06",
+        "name": "Easter Monday"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-05-01",
+        "name": "Labour Day"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-05-03",
+        "name": "Constitution Day"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-06-04",
+        "name": "Corpus Christi"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-08-15",
+        "name": "Assumption Day"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-11-01",
+        "name": "All Saints' Day"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-11-11",
+        "name": "Independence Day"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "Poland",
+        "date": "2026-12-26",
+        "name": "St. Stephen's Day"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-04-03",
+        "name": "Good Friday"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-04-05",
+        "name": "Easter Sunday"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-04-25",
+        "name": "Freedom Day"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-05-01",
+        "name": "Labour Day"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-06-04",
+        "name": "Corpus Christi"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-06-10",
+        "name": "Portugal Day"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-08-15",
+        "name": "Assumption Day"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-10-05",
+        "name": "Republic Day"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-11-01",
+        "name": "All Saints' Day"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-12-01",
+        "name": "Restoration of Independence"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-12-08",
+        "name": "Immaculate Conception"
+    },
+    {
+        "country": "Portugal",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "Spain",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "Spain",
+        "date": "2026-01-06",
+        "name": "Epiphany"
+    },
+    {
+        "country": "Spain",
+        "date": "2026-04-03",
+        "name": "Good Friday"
+    },
+    {
+        "country": "Spain",
+        "date": "2026-05-01",
+        "name": "Labour Day"
+    },
+    {
+        "country": "Spain",
+        "date": "2026-08-15",
+        "name": "Assumption Day"
+    },
+    {
+        "country": "Spain",
+        "date": "2026-10-12",
+        "name": "Fiesta Nacional de España"
+    },
+    {
+        "country": "Spain",
+        "date": "2026-11-01",
+        "name": "All Saints' Day"
+    },
+    {
+        "country": "Spain",
+        "date": "2026-12-06",
+        "name": "Constitution Day"
+    },
+    {
+        "country": "Spain",
+        "date": "2026-12-08",
+        "name": "Immaculate Conception"
+    },
+    {
+        "country": "Spain",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "United Kingdom",
+        "date": "2026-01-01",
+        "name": "New Year's Day"
+    },
+    {
+        "country": "United Kingdom",
+        "date": "2026-04-03",
+        "name": "Good Friday"
+    },
+    {
+        "country": "United Kingdom",
+        "date": "2026-04-06",
+        "name": "Easter Monday"
+    },
+    {
+        "country": "United Kingdom",
+        "date": "2026-05-04",
+        "name": "Early May Bank Holiday"
+    },
+    {
+        "country": "United Kingdom",
+        "date": "2026-05-25",
+        "name": "Spring Bank Holiday"
+    },
+    {
+        "country": "United Kingdom",
+        "date": "2026-08-31",
+        "name": "Summer Bank Holiday"
+    },
+    {
+        "country": "United Kingdom",
+        "date": "2026-12-25",
+        "name": "Christmas Day"
+    },
+    {
+        "country": "United Kingdom",
+        "date": "2026-12-26",
+        "name": "Boxing Day"
+    }
+];
+
+        function parseHolidays() {
+            // No longer parsing text, just using array
+            return allHolidays;
+        }
+
+        // JS Date to YYYY-MM-DD (Local)
+        function getLocalISODate(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // --- RENDER LOGIC ---
+
+        function init() {
+            holidays = parseHolidays();
+            // Assign unique IDs
+            eventsData.forEach((ev, index) => { ev.id = `evt_${index}`; });
+            renderCountrySelector();
+            renderApp();
+        }
+
+        function renderCountrySelector() {
+            const uniqueCountries = [...new Set(allHolidays.map(h => h.country))].sort();
+            const list = document.getElementById('countryList');
+            // Keep "All" item
+            let html = `<label class="checkbox-item"><input type="checkbox" value="All" onchange="toggleCountry('All')"><span class="checkbox-box"></span> Select All</label>
+                        <div style="height:1px; background:#eee; margin:5px 0"></div>`;
+
+            uniqueCountries.forEach(c => {
+                const checked = filters.countries.includes(c) ? 'checked' : '';
+                html += `<label class="checkbox-item">
+                            <input type="checkbox" value="${c}" ${checked} onchange="toggleCountry('${c}')">
+                            <span class="checkbox-box"></span> ${c}
+                         </label>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function toggleCountryDropdown() {
+            document.getElementById('countryList').classList.toggle('open');
+        }
+
+        function toggleCountry(val) {
+            if (val === 'All') {
+                const checkboxes = document.querySelectorAll('#countryList input[type="checkbox"]');
+                const allChecked = Array.from(checkboxes).every(c => c.checked);
+                if (allChecked) filters.countries = [];
+                else filters.countries = [...new Set(allHolidays.map(h => h.country))];
+            } else {
+                if (filters.countries.includes(val)) filters.countries = filters.countries.filter(x => x !== val);
+                else filters.countries.push(val);
+            }
+            // Update UI check state
+            renderCountrySelector();
+            // Update header text
+            const count = filters.countries.length;
+            document.getElementById('countryHeaderTitle').textContent = count > 0 ? `${count} countries` : 'Select Countries';
+            renderApp();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            const wrapper = document.querySelector('.custom-select-wrapper');
+            if (!wrapper.contains(e.target)) {
+                document.getElementById('countryList').classList.remove('open');
+            }
+        });
+
+        function renderApp() {
+            // Force English Month
+            const dateStr = currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            document.getElementById('displayMonth').textContent = dateStr;
+
+            // Update Header Titles
+            // Main Title (span in header, or custom logic)
+            // The HTML structure has .app-title parent with span and small.
+            const titleEl = document.querySelector('.app-title span');
+            const subTitleEl = document.querySelector('.app-title small');
+            if (titleEl) titleEl.textContent = appTitleBase;
+            if (subTitleEl) subTitleEl.textContent = appSubtitleBase;
+
+            document.getElementById('printTitle').textContent = `${appTitleBase} - ${dateStr.toUpperCase()}`;
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // Visibility toggles
+            const gridView = document.getElementById('gridView');
+            const listView = document.getElementById('listView');
+            const btnYear = document.getElementById('btnYearView');
+
+            if (activeView === 'grid') {
+                gridView.style.display = 'flex';
+                listView.style.display = 'none';
+                btnYear.style.display = 'none';
+                document.querySelector('.month-nav').style.display = 'flex'; // Show nav in grid
+                renderGrid(year, month);
+            } else {
+                gridView.style.display = 'none';
+                listView.style.display = 'block';
+                btnYear.style.display = 'flex';
+
+                if (listMode === 'year') {
+                    document.querySelector('.month-nav').style.display = 'none'; // Hide nav in year mode
+                    renderListYear(year);
+                } else {
+                    document.querySelector('.month-nav').style.display = 'flex'; // Show nav in month mode
+                    renderList(year, month);
+                }
+            }
+        }
+
+        function renderGrid(year, month) {
+            const container = document.getElementById('gridContent');
+            container.innerHTML = '';
+
+            // RE-WRITE Render Grid Logic Simpler for 5 days
+            // Calculate Grid Start (Monday aligned)
+            const firstDay = new Date(year, month, 1);
+            let dayOfWeek = firstDay.getDay();
+            // If Sunday(0), offset is 6. If Sat(6), offset is 5.
+            if (dayOfWeek === 0) dayOfWeek = 7; // Normalize Mon=1...Sun=7
+
+            // We want to start on the Monday of the first week
+            let startMonday = new Date(firstDay);
+            startMonday.setDate(firstDay.getDate() - (dayOfWeek - 1));
+
+            let currentDay = new Date(startMonday);
+
+            for (let w = 0; w < 6; w++) {
+                for (let d = 0; d < 5; d++) { // Mon-Fri only
+                    const cellDate = new Date(currentDay);
+                    // Add 'd' days to current week start
+                    cellDate.setDate(currentDay.getDate() + d);
+
+                    const isoDate = getLocalISODate(cellDate);
+
+                    const cell = document.createElement('div');
+                    cell.className = 'day-cell';
+                    if (cellDate.getMonth() !== month) cell.classList.add('other-month');
+
+                    // Past days check
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    if (cellDate < today && cellDate.getMonth() === month) cell.classList.add('past-day');
+                    if (getLocalISODate(new Date()) === isoDate) cell.classList.add('today');
+
+                    // Date Header
+                    const numDiv = document.createElement('div');
+                    numDiv.className = 'day-num';
+                    numDiv.innerHTML = `<span>${cellDate.getDate()}</span>`;
+                    cell.appendChild(numDiv);
+
+                    const stack = document.createElement('div');
+                    stack.className = 'events-stack';
+
+                    // Finance Events
+                    eventsData.filter(e => e.d === isoDate).forEach(ev => {
+                        if (filters.categories.includes(ev.c) && filters.scopes.includes(ev.s)) {
+                            // ... (Render Event Chip Code - Re-using existing logic pattern)
+                            const chip = createEventChip(ev);
+                            stack.appendChild(chip);
+                        }
+                    });
+
+                    // Holidays (Filter Weekend)
+                    if (filters.countries.length > 0) {
+                        holidays.filter(h => h.date === isoDate && filters.countries.includes(h.country)).forEach(h => {
+                            const hDate = new Date(h.date);
+                            const hDay = hDate.getDay();
+                            if (hDay !== 0 && hDay !== 6) { // Skip weekends
+                                const chip = document.createElement('div');
+                                chip.className = 'chip cat-holiday';
+                                const flag = getFlag(h.country);
+                                chip.innerHTML = `<span style="font-size:0.8rem">${flag}</span><span>${h.name}</span>`;
+                                stack.appendChild(chip);
+                            }
+                        });
+                    }
+
+                    cell.appendChild(stack);
+                    container.appendChild(cell);
+                }
+                // Advance to next Monday
+                currentDay.setDate(currentDay.getDate() + 7);
+            }
+        }
+
+        function createEventChip(ev) {
+            const chip = document.createElement('div');
+            chip.className = `chip cat-${ev.c}`;
+            let iconClass = 'fa-circle';
+            if (ev.c === 'closing') iconClass = 'fa-lock';
+            else if (ev.c === 'fpa') iconClass = 'fa-chart-line';
+            else if (ev.c === 'gov') iconClass = 'fa-gavel';
+            else if (ev.c === 'treasury') iconClass = 'fa-coins';
+            else if (ev.c === 'tax') iconClass = 'fa-scale-balanced';
+            else if (ev.c === 'control') iconClass = 'fa-shield-halved';
+
+            chip.innerHTML = `<i class="fa-solid ${iconClass} event-icon"></i><span>${ev.t}</span>`;
+
+            if (isSelectionMode) {
+                chip.classList.add('selection-mode');
+                if (selectedEvents.has(ev.id)) chip.classList.add('selected');
+                chip.onclick = (e) => { e.stopPropagation(); toggleEventSelection(ev.id); };
+            }
+            chip.onmousemove = (e) => showTooltip(e, ev.t, ev.desc);
+            chip.onmouseleave = hideTooltip;
+            return chip;
+        }
+
+        // --- MODAL UTILS ---
+        function openGuide() { document.getElementById('guideModal').style.display = 'flex'; }
+        function closeGuide(e) {
+            if (!e || e.target.id === 'guideModal' || e.target.classList.contains('close-modal'))
+                document.getElementById('guideModal').style.display = 'none';
+        }
+
+        function getFlag(country) {
+            const map = { 'Spain': '🇪🇸', 'France': '🇫🇷', 'United Kingdom': '🇬🇧', 'Germany': '🇩🇪', 'Italy': '🇮🇹', 'Netherlands': '🇳🇱', 'Portugal': '🇵🇹', 'Poland': '🇵🇱', 'Austria': '🇦🇹', 'Belgium': '🇧🇪' };
+            return map[country] || '🏳️';
+        }
+
+        function renderList(year, month) {
+            const container = document.getElementById('listView');
+            container.innerHTML = '';
+
+            // Render specific month
+            renderListContent(container, year, month);
+        }
+
+        function renderListYear(year) {
+            const container = document.getElementById('listView');
+            container.innerHTML = '';
+
+            for (let m = 0; m < 12; m++) {
+                const monthName = new Date(year, m, 1).toLocaleString('en-US', { month: 'long' });
+
+                // Header
+                const header = document.createElement('div');
+                header.style.padding = '15px 10px';
+                header.style.background = '#e9ecef';
+                header.style.color = 'var(--bv-navy)';
+                header.style.fontWeight = '800';
+                header.style.textTransform = 'uppercase';
+                header.style.marginTop = '20px';
+                header.style.borderRadius = '6px';
+                header.textContent = `${monthName} ${year}`;
+                container.appendChild(header);
+
+                renderListContent(container, year, m);
+            }
+        }
+
+        function renderListContent(container, year, month) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let found = false;
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const date = new Date(year, month, i);
+                const isoDate = getLocalISODate(date);
+
+                // Get events
+                const evs = eventsData.filter(e => e.d === isoDate && filters.categories.includes(e.c) && filters.scopes.includes(e.s));
+                // Get holidays
+                const hols = holidays.filter(h => {
+                    if (!filters.countries.includes(h.country)) return false;
+                    const hDate = new Date(h.date);
+                    const day = hDate.getDay();
+                    if (day === 0 || day === 6) return false; // Skip weekends
+                    return h.date === isoDate;
+                });
+
+                if (evs.length > 0 || hols.length > 0) {
+                    found = true;
+                    // Events
+                    evs.forEach(ev => { renderListRow(container, date, ev, false); });
+                    // Holidays
+                    hols.forEach(h => { renderListRow(container, date, h, true); });
+                }
+            }
+            if (!found) {
+                const empty = document.createElement('div');
+                empty.style.padding = '10px';
+                empty.style.color = '#ccc';
+                empty.style.fontStyle = 'italic';
+                empty.textContent = 'No events';
+                container.appendChild(empty);
+            }
+        }
+
+        function renderListRow(container, date, item, isHoliday) {
+            const row = document.createElement('div');
+            row.className = 'list-row';
+
+            let iconClass = 'fa-circle';
+            let cat = isHoliday ? 'holiday' : item.c;
+            let title = isHoliday ? item.name : item.t;
+            let desc = isHoliday ? item.country : item.desc;
+            let scope = isHoliday ? 'HOL' : item.s;
+            let badgeStyle = isHoliday ? 'background: #eee; color: #555; border: 1px solid #ccc' : `background:var(--cat-${item.c})`;
+
+            if (!isHoliday) {
+                if (item.c === 'closing') iconClass = 'fa-lock';
+                else if (item.c === 'fpa') iconClass = 'fa-chart-line';
+                else if (item.c === 'gov') iconClass = 'fa-gavel';
+                else if (item.c === 'treasury') iconClass = 'fa-coins';
+                else if (item.c === 'tax') iconClass = 'fa-scale-balanced';
+                else if (item.c === 'control') iconClass = 'fa-shield-halved';
+            } else {
+                iconClass = 'fa-umbrella-beach';
+            }
+
+            // Selection
+            const id = isHoliday ? `hol_${item.country}_${item.date}` : item.id;
+            if (!isHoliday && isSelectionMode) { // Allow selecting events, holidays maybe later?
+                row.style.cursor = 'pointer';
+                if (selectedEvents.has(id)) row.classList.add('selected-row');
+                row.onclick = () => toggleEventSelection(id);
+            }
+
+            const flag = isHoliday ? getFlag(item.country) + ' ' : '';
+
+            row.innerHTML = `
+                <div class="list-date">${date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}</div>
+                <div class="list-scope" style="font-weight:800; color:#555">${scope}</div>
+                <div class="list-badge" style="${badgeStyle}; text-align:center"><i class="fa-solid ${iconClass}"></i> ${cat}</div>
+                <div class="list-body">
+                    <div style="font-weight:700; color:var(--bv-text); font-size:0.95rem">${flag}${title}</div>
+                    <div class="list-time" style="margin:0">${desc}</div>
+                </div>
+            `;
+            container.appendChild(row);
+        }
+
+        // --- EXPORT LOGIC (HIGH QUALITY) ---
+        function exportPNG() {
+            const btn = document.querySelector('.btn-secondary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Exporting...';
+
+            const element = document.getElementById('captureArea');
+
+            // 1. Force Full Height (Disable scroll for capture)
+            const originalHeight = element.style.height;
+            const originalOverflow = element.style.overflow;
+
+            element.style.height = 'auto';
+            element.style.overflow = 'visible';
+
+            // Also force grid to expand
+            const gridView = document.getElementById('gridView');
+            const originalGridDisplay = gridView.style.display;
+            if (activeView === 'grid') {
+                // Ensure the grid expands vertically
+                gridView.style.height = 'auto';
+            }
+
+            html2canvas(element, {
+                scale: 2, // 2x Resolution
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                height: element.scrollHeight // Capture full height
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `BV_Finance_Calendar_${currentDate.toISOString().slice(0, 7)}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+
+                // Restore Styles
+                element.style.height = originalHeight;
+                element.style.overflow = originalOverflow;
+                if (activeView === 'grid') gridView.style.height = '100%';
+
+                btn.innerHTML = originalText;
+            });
+        }
+
+        // --- SELECTION & EXPORT ICS ---
+        let isSelectionMode = false;
+        let selectedEvents = new Set();
+
+        function toggleSelectionMode() {
+            isSelectionMode = !isSelectionMode;
+            const btn = document.getElementById('btnSelectMode');
+            const bar = document.getElementById('selectionBar');
+            const body = document.body;
+
+            if (isSelectionMode) {
+                body.classList.add('selection-active');
+                btn.style.background = 'var(--bv-navy)';
+                btn.innerHTML = '<span>❌</span> Close Selection';
+                bar.style.display = 'flex';
+            } else {
+                body.classList.remove('selection-active');
+                btn.style.background = '';
+                btn.innerHTML = '<span>✅</span> Select';
+                bar.style.display = 'none';
+                clearSelection();
+            }
+            renderApp();
+        }
+
+        function selectAll(mode) {
+            // 'month' or 'all'
+            let pool = [];
+            if (mode === 'all') {
+                // All matching current filters
+                pool = eventsData.filter(e => filters.categories.includes(e.c) && filters.scopes.includes(e.s));
+            } else {
+                // Only current view month
+                const y = currentDate.getFullYear();
+                const m = currentDate.getMonth();
+                pool = eventsData.filter(e => {
+                    const d = new Date(e.d);
+                    return d.getFullYear() === y && d.getMonth() === m && filters.categories.includes(e.c) && filters.scopes.includes(e.s);
+                });
+            }
+
+            pool.forEach(e => selectedEvents.add(e.id));
+            document.getElementById('selectedCount').textContent = `${selectedEvents.size} selected`;
+            renderApp();
+        }
+
+        function toggleEventSelection(id) {
+            if (selectedEvents.has(id)) selectedEvents.delete(id);
+            else selectedEvents.add(id);
+
+            document.getElementById('selectedCount').textContent = `${selectedEvents.size} selected`;
+            renderApp();
+        }
+
+        function clearSelection() {
+            selectedEvents.clear();
+            document.getElementById('selectedCount').textContent = '0 selected';
+            renderApp();
+        }
+
+        function exportICS() {
+            if (selectedEvents.size === 0) {
+                alert("Please select at least one event to export.");
+                return;
+            }
+
+            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Bureau Veritas//Finance Calendar//EN\n";
+
+            selectedEvents.forEach(id => {
+                const ev = eventsData.find(e => e.id === id);
+                if (ev) {
+                    const dtStart = ev.d.replace(/-/g, '');
+                    // Assume all day event for simplicity, or set default time
+                    // Standard ICS All Day: DTSTART:20260301; VALUE=DATE
+                    icsContent += "BEGIN:VEVENT\n";
+                    icsContent += `DTSTART;VALUE=DATE:${dtStart}\n`;
+                    icsContent += `SUMMARY:[BV Finance] ${ev.t}\n`;
+                    icsContent += `DESCRIPTION:${ev.desc} (${ev.s} Scope)\n`;
+                    icsContent += "END:VEVENT\n";
+                }
+            });
+
+            icsContent += "END:VCALENDAR";
+
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "finance_events.ics";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // --- CONTROLS ---
+        function changeMonth(dir) {
+            currentDate.setMonth(currentDate.getMonth() + dir);
+            renderApp();
+        }
+
+        function toggleView() {
+            activeView = activeView === 'grid' ? 'list' : 'grid';
+            document.getElementById('viewText').textContent = activeView === 'grid' ? 'List View' : 'Calendar View';
+            document.getElementById('viewIcon').textContent = activeView === 'grid' ? '📋' : '📅';
+            renderApp();
+        }
+
+        function toggleListMode() {
+            listMode = listMode === 'month' ? 'year' : 'month';
+            document.getElementById('listModeText').textContent = listMode === 'month' ? 'Current Month' : 'Full Year 2026';
+            renderApp();
+        }
+
+        // Filter Toggles
+        function toggleCat(cat) { toggleFilter('categories', cat); }
+        function toggleScope(sc) { toggleFilter('scopes', sc); }
+
+        function toggleFilter(arrName, val) {
+            if (filters[arrName].includes(val)) filters[arrName] = filters[arrName].filter(x => x !== val);
+            else filters[arrName].push(val);
+            renderApp();
+        }
+
+        // Tooltip
+        const tooltip = document.getElementById('tooltip');
+        function showTooltip(e, title, desc) {
+            tooltip.innerHTML = `<strong>${title}</strong>${desc}`;
+            tooltip.style.opacity = 1;
+
+            // Positioning logic to keep on screen
+            let left = e.clientX + 15;
+            let top = e.clientY + 15;
+            if (left + 250 > window.innerWidth) left = e.clientX - 260;
+            if (top + 100 > window.innerHeight) top = e.clientY - 100;
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+        function hideTooltip() { tooltip.style.opacity = 0; }
+
+        // --- SETTINGS LOGIC ---
+        function openSettings() {
+            // Sync Title Input
+            const currentTitle = document.getElementById('printTitle').textContent.split('-')[0].trim();
+            // We use the global base if available, or extract from DOM
+            document.getElementById('appTitleInput').value = appTitleBase || currentTitle;
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function closeSettings(e) {
+            if (!e || e.target.id === 'settingsModal' || e.target.classList.contains('close-modal'))
+                document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function updateTitle() {
+            const newTitle = document.getElementById('appTitleInput').value;
+            const newSub = document.getElementById('appSubtitleInput').value;
+
+            if (newTitle) appTitleBase = newTitle;
+            if (newSub) appSubtitleBase = newSub;
+
+            renderApp();
+            alert('Titles updated! Remember to "Save New App Version" to keep this change permanently.');
+        }
+
+        // --- EXCEL LOGIC ---
+        function exportToExcel() {
+            const data = [];
+            // Holidays
+            allHolidays.forEach(h => {
+                data.push({ Date: h.date, Type: 'Holiday', Category_Country: h.country, Title: h.name, Scope: '', Description: '' });
+            });
+            // Events
+            eventsData.forEach(e => {
+                data.push({ Date: e.d, Type: 'Event', Category_Country: e.c, Title: e.t, Scope: e.s, Description: e.desc });
+            });
+            data.sort((a, b) => a.Date.localeCompare(b.Date));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Calendar Data");
+            XLSX.writeFile(wb, "Europe_Finance_Calendar_Data.xlsx");
+        }
+
+        async function importFromExcel(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            try {
+                const data = await file.arrayBuffer();
+                const workbook = XLSX.read(data);
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+
+                let newHols = [], newEvs = [];
+                json.forEach((row, i) => {
+                    if (row.Type === 'Holiday') {
+                        newHols.push({ country: row.Category_Country, date: row.Date, name: row.Title });
+                    } else {
+                        newEvs.push({ id: `evt_imp_${i}`, d: row.Date, t: row.Title, c: row.Category_Country, s: row.Scope, desc: row.Description || '' });
+                    }
+                });
+
+                // Update Arrays
+                allHolidays.length = 0; newHols.forEach(h => allHolidays.push(h));
+                eventsData.length = 0; newEvs.forEach(e => eventsData.push(e));
+
+                init(); // Re-render
+                alert(`Imported ${newEvs.length} events and ${newHols.length} holidays.`);
+                closeSettings(null);
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+            input.value = '';
+        }
+
+        // --- SAVE HTML LOGIC (Persistence) ---
+        function saveHTML() {
+            // Temporarily hide modal to ensure it's closed in the saved file
+            const modal = document.getElementById('settingsModal');
+            const currentDisplay = modal.style.display;
+            modal.style.display = 'none';
+
+            let html = document.documentElement.outerHTML;
+
+            // Restore modal state for the current user
+            modal.style.display = currentDisplay;
+            // Inject current data state into the HTML string
+            const eventsJson = JSON.stringify(eventsData, null, 4);
+            const holidayJson = JSON.stringify(allHolidays, null, 4);
+
+            // Regex replacements (Robust: matches [ ... ]; including comments/newlines)
+            html = html.replace(/const eventsData = \[[\s\S]*?\];/m, `const eventsData = ${eventsJson};`);
+            html = html.replace(/const allHolidays = \[[\s\S]*?\];/m, `const allHolidays = ${holidayJson};`);
+
+            // Escape quotes
+            const safeTitle = appTitleBase.replace(/"/g, '\\"');
+            const safeSubtitle = appSubtitleBase.replace(/"/g, '\\"');
+
+            html = html.replace(/let\s+appTitleBase\s*=\s*(["']).*?\1;/, `let appTitleBase = "${safeTitle}";`);
+            html = html.replace(/let\s+appSubtitleBase\s*=\s*(["']).*?\1;/, `let appSubtitleBase = "${safeSubtitle}";`);
+
+
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'EUROPE FINANCE CALENDAR.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        init();
+    </script>
+
+
+</body></html>

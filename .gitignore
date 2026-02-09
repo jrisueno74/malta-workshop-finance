@@ -1,0 +1,17 @@
+# Exclude large media files (over 100MB) or sensitive internal docs
+*.mp4
+*.webm
+*.pptx
+*.pdf
+*.zip
+
+# Allow specific small assets if needed (force add with git add -f)
+!images/
+!*thumbnail.png
+!*logo.png
+
+# System files
+Desktop.ini
+.DS_Store
+node_modules/
+.env

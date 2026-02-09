@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matriz RACI Facilities - Bureau Veritas Iberia</title>
+    <style>
+        /* ============================================
+           ESTILOS GENERALES
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #003DA5 0%, #0056D6 100%);
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .header {
+            background: linear-gradient(135deg, #003DA5 0%, #0056D6 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        /* ============================================
+           CONTEXTO ORGANIZACIONAL
+           ============================================ */
+        .context-banner {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+            border-left: 5px solid #ffc107;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .context-item {
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .context-item .icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .context-item h3 {
+            color: #003DA5;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .context-item p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .context-item .highlight {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* ============================================
+           NAVEGACIÓN SERVICIOS
+           ============================================ */
+        .services-nav {
+            background: white;
+            padding: 20px 40px;
+            border-bottom: 3px solid #003DA5;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .services-nav h2 {
+            color: #003DA5;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .service-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .service-btn {
+            flex: 1;
+            min-width: 200px;
+            max-width: 250px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .service-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: #003DA5;
+        }
+
+        .service-btn.active {
+            background: linear-gradient(135deg, #003DA5 0%, #0056D6 100%);
+            color: white;
+            border-color: #003DA5;
+            box-shadow: 0 4px 15px rgba(0, 61, 165, 0.3);
+        }
+
+        .service-btn .icon {
+            font-size: 2em;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .service-btn .name {
+            font-size: 1em;
+            display: block;
+        }
+
+        /* ============================================
+           LEYENDA RACI
+           ============================================ */
+        .legend-section {
+            padding: 30px 40px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .legend-title {
+            font-size: 1.5em;
+            color: #003DA5;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .legend-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .legend-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .legend-badge {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.8em;
+            color: white;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .legend-badge.r { background: linear-gradient(135deg, #92D050 0%, #6fb83a 100%); }
+        .legend-badge.a { background: linear-gradient(135deg, #FF6B6B 0%, #ee5a52 100%); }
+        .legend-badge.c { background: linear-gradient(135deg, #FFD966 0%, #f5c842 100%); color: #7a5f00; }
+        .legend-badge.i { background: linear-gradient(135deg, #B4C7E7 0%, #8fa8d0 100%); }
+
+        .legend-text h3 {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: #003DA5;
+        }
+
+        .legend-text p {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* ============================================
+           CONTENEDOR DE SERVICIOS
+           ============================================ */
+        .service-content {
+            display: none;
+            padding: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .service-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .service-title {
+            font-size: 2em;
+            color: #003DA5;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .service-title .icon {
+            font-size: 1.5em;
+        }
+
+        .search-box {
+            padding: 10px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 1em;
+            min-width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #003DA5;
+            box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.1);
+        }
+
+        /* ============================================
+           TABLA
+           ============================================ */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            font-size: 0.9em;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #003DA5 0%, #0056D6 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 15px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95em;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        th:first-child {
+            text-align: left;
+            min-width: 280px;
+            position: sticky;
+            left: 0;
+            background: #003DA5;
+            z-index: 11;
+        }
+
+        th .icon {
+            display: block;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        tbody tr.category-row {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        tbody tr.category-row td {
+            padding: 12px 15px;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: #333;
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 5;
+        }
+
+        tbody tr:hover td:first-child {
+            background: #f8f9fa;
+        }
+
+        /* Estilos RACI */
+        .raci-cell {
+            font-weight: bold;
+            font-size: 1.1em;
+            border-radius: 5px;
+            padding: 8px;
+        }
+
+        .raci-r {
+            background: linear-gradient(135deg, #92D050 0%, #a8db6a 100%);
+            color: #2d5016;
+        }
+
+        .raci-a {
+            background: linear-gradient(135deg, #FF6B6B 0%, #ff8585 100%);
+            color: white;
+        }
+
+        .raci-c {
+            background: linear-gradient(135deg, #FFD966 0%, #ffe380 100%);
+            color: #7a5f00;
+        }
+
+        .raci-i {
+            background: linear-gradient(135deg, #B4C7E7 0%, #c8d8f0 100%);
+            color: #1a3a5c;
+        }
+
+        .raci-ra {
+            background: linear-gradient(135deg, #92D050 0%, #FF6B6B 100%);
+            color: white;
+        }
+
+        .raci-empty {
+            color: #ccc;
+            font-size: 1.2em;
+        }
+
+        /* ============================================
+           CONTACTOS
+           ============================================ */
+        .contacts-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 5px solid #003DA5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .contacts-box h4 {
+            color: #003DA5;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .contacts-box p {
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .contacts-box strong {
+            color: #003DA5;
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 3px solid #003DA5;
+        }
+
+        .footer p {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .footer a {
+            color: #003DA5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .context-banner {
+                flex-direction: column;
+            }
+
+            .service-buttons {
+                flex-direction: column;
+            }
+
+            .service-btn {
+                max-width: 100%;
+            }
+
+            .service-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 0.85em;
+            }
+
+            th:first-child, td:first-child {
+                min-width: 200px;
+            }
+        }
+
+        /* ============================================
+           PRINT STYLES
+           ============================================ */
+        @media print {
+            .services-nav, .search-box, .footer { display: none; }
+            .service-content { display: block !important; page-break-after: always; }
+            table { font-size: 10pt; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🏢 Matriz RACI Facilities</h1>
+            <p><strong>Bureau Veritas - España y Portugal</strong></p>
+            <p class="subtitle">Definición de Responsabilidades por Servicio</p>
+        </div>
+
+        <!-- CONTEXTO ORGANIZACIONAL -->
+        <div class="context-banner">
+            <div class="context-item">
+                <div class="icon">👤</div>
+                <h3>Coordinador de Oficina</h3>
+                <p><strong>Cantidad:</strong> 1 por oficina</p>
+                <p><strong>Dedicación:</strong> Rol adicional</p>
+                <p><strong>Alcance:</strong> Gestión operativa local</p>
+            </div>
+            <div class="context-item">
+                <div class="icon">🛒</div>
+                <h3>Compras Facilities</h3>
+                <p class="highlight">⚠️ 0.5 FTE para toda Iberia</p>
+                <p><strong>Alcance:</strong> Gestión estratégica</p>
+                <p><strong>Responsabilidad:</strong> Contratos y homologación</p>
+            </div>
+            <div class="context-item">
+                <div class="icon">🔧</div>
+                <h3>Proveedores</h3>
+                <p><strong>Limpieza:</strong> ISS Facility Services</p>
+                <p><strong>Electricidad:</strong> Grupo Trebol</p>
+                <p><strong>Seguridad:</strong> Securitas Direct</p>
+            </div>
+        </div>
+
+        <!-- NAVEGACIÓN SERVICIOS -->
+        <div class="services-nav">
+            <h2>📋 Selecciona un Servicio</h2>
+            <div class="service-buttons">
+                <button class="service-btn active" onclick="showService('limpieza')">
+                    <span class="icon">🧹</span>
+                    <span class="name">Limpieza</span>
+                </button>
+                <button class="service-btn" onclick="showService('electricidad')">
+                    <span class="icon">⚡</span>
+                    <span class="name">Electricidad</span>
+                </button>
+                <button class="service-btn" onclick="showService('seguridad')">
+                    <span class="icon">🔐</span>
+                    <span class="name">Seguridad</span>
+                </button>
+                <button class="service-btn" onclick="showService('mantenimiento')">
+                    <span class="icon">🛠️</span>
+                    <span class="name">Mantenimiento</span>
+                </button>
+                <button class="service-btn" onclick="showService('lyreco')">
+                    <span class="icon">📦</span>
+                    <span class="name">Lyreco</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- LEYENDA RACI -->
+        <div class="legend-section">
+            <div class="legend-title">📖 Leyenda RACI</div>
+            <div class="legend-grid">
+                <div class="legend-card">
+                    <div class="legend-badge r">R</div>
+                    <div class="legend-text">
+                        <h3>Responsible (Responsable)</h3>
+                        <p>Ejecuta la tarea y es responsable de su realización</p>
+                    </div>
+                </div>
+                <div class="legend-card">
+                    <div class="legend-badge a">A</div>
+                    <div class="legend-text">
+                        <h3>Accountable (Aprobador)</h3>
+                        <p>Autoridad final de decisión y accountability del resultado</p>
+                    </div>
+                </div>
+                <div class="legend-card">
+                    <div class="legend-badge c">C</div>
+                    <div class="legend-text">
+                        <h3>Consulted (Consultado)</h3>
+                        <p>Debe ser consultado antes de tomar decisiones o ejecutar acciones</p>
+                    </div>
+                </div>
+                <div class="legend-card">
+                    <div class="legend-badge i">I</div>
+                    <div class="legend-text">
+                        <h3>Informed (Informado)</h3>
+                        <p>Debe recibir información sobre decisiones y resultados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SERVICIO: LIMPIEZA -->
+        <div id="limpieza" class="service-content active">
+            <div class="service-header">
+                <div class="service-title">
+                    <span class="icon">🧹</span>
+                    <span>LIMPIEZA - ISS Facility Services</span>
+                </div>
+                <input type="text" class="search-box" placeholder="🔍 Buscar actividad..." onkeyup="filterTable('limpieza-table', this.value)">
+            </div>
+
+            <div class="table-container">
+                <table id="limpieza-table">
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>
+                                <span class="icon">👤</span>
+                                Coordinador<br>Oficina
+                            </th>
+                            <th>
+                                <span class="icon">🛒</span>
+                                Compras<br>(0.5 FTE)
+                            </th>
+                            <th>
+                                <span class="icon">🔧</span>
+                                Coordinador<br>ISS
+                            </th>
+                            <th>
+                                <span class="icon">🏢</span>
+                                Proveedor<br>ISS
+                            </th>
+                            <th>
+                                <span class="icon">👥</span>
+                                Usuario<br>Final
+                            </th>
+                            <th>
+                                <span class="icon">💰</span>
+                                Finance
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="category-row">
+                            <td colspan="7">🔧 INCIDENCIAS OPERATIVAS</td>
+                        </tr>
+                        <tr>
+                            <td>Detección de incidencia</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Reporte inicial al proveedor</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Resolución de incidencia</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Seguimiento y cierre</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Escalado si no se resuelve (>24-48h)</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        
+                        <tr class="category-row">
+                            <td colspan="7">📝 GESTIÓN CONTRACTUAL</td>
+                        </tr>
+                        <tr>
+                            <td>Alta nueva ubicación</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Baja ubicación</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Cambio de alcance servicio</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Negociación tarifas</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        <tr>
+                            <td>Aprobación contrato</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-a">A</td>
+                        </tr>
+                        
+                        <tr class="category-row">
+                            <td colspan="7">✅ SUPERVISIÓN CALIDAD</td>
+                        </tr>
+                        <tr>
+                            <td>Auditorías calidad local</td>
+                            <td class="raci-cell raci-ra">A/R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Evaluación desempeño proveedor</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Plan de mejora</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Reclamaciones formales</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="contacts-box">
+                <h4>📞 Contactos Limpieza</h4>
+                <p><strong>Proveedor:</strong> ISS Facility Services</p>
+                <p><strong>Contacto inicial:</strong> Coordinador ISS (a través de Coordinador Oficina)</p>
+                <p><strong>Escalado:</strong> ComprasEspMail@bureauveritas.com</p>
+                <p><strong>Horario:</strong> L-V 8:00-18:00</p>
+            </div>
+        </div>
+
+        <!-- SERVICIO: ELECTRICIDAD -->
+        <div id="electricidad" class="service-content">
+            <div class="service-header">
+                <div class="service-title">
+                    <span class="icon">⚡</span>
+                    <span>ELECTRICIDAD - Grupo Trebol</span>
+                </div>
+                <input type="text" class="search-box" placeholder="🔍 Buscar actividad..." onkeyup="filterTable('electricidad-table', this.value)">
+            </div>
+
+            <div class="table-container">
+                <table id="electricidad-table">
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>
+                                <span class="icon">👤</span>
+                                Coordinador<br>Oficina
+                            </th>
+                            <th>
+                                <span class="icon">🛒</span>
+                                Compras<br>(0.5 FTE)
+                            </th>
+                            <th>
+                                <span class="icon">🔧</span>
+                                Proveedor<br>Trebol
+                            </th>
+                            <th>
+                                <span class="icon">👥</span>
+                                Usuario<br>Final
+                            </th>
+                            <th>
+                                <span class="icon">💰</span>
+                                Finance
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="category-row">
+                            <td colspan="6">🔧 INCIDENCIAS OPERATIVAS</td>
+                        </tr>
+                        <tr>
+                            <td>Detección corte suministro</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Contacto directo proveedor</td>
+                            <td class="raci-cell raci-ra">R/A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Resolución técnica</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Escalado a Compras (>24-48h)</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        
+                        <tr class="category-row">
+                            <td colspan="6">📝 GESTIÓN CONTRACTUAL</td>
+                        </tr>
+                        <tr>
+                            <td>Alta nuevo punto suministro</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Baja punto suministro</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Cambio titularidad</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Negociación tarifas</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        <tr>
+                            <td>Revisión contratos anuales</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        
+                        <tr class="category-row">
+                            <td colspan="6">📊 OPTIMIZACIÓN CONSUMOS</td>
+                        </tr>
+                        <tr>
+                            <td>Monitorización consumos</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        <tr>
+                            <td>Propuestas eficiencia energética</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        <tr>
+                            <td>Implementación medidas ahorro</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Reporting consumos</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="contacts-box">
+                <h4>📞 Contactos Electricidad</h4>
+                <p><strong>Proveedor:</strong> Grupo Trebol Energía</p>
+                <p><strong>Contacto directo:</strong> Roger Coll</p>
+                <p><strong>Teléfono:</strong> 931 185 894 / 644 567 403</p>
+                <p><strong>Email:</strong> roger.coll@grupotrebolenergia.es</p>
+                <p><strong>Escalado:</strong> ComprasEspMail@bureauveritas.com</p>
+            </div>
+        </div>
+
+        <!-- SERVICIO: SEGURIDAD -->
+        <div id="seguridad" class="service-content">
+            <div class="service-header">
+                <div class="service-title">
+                    <span class="icon">🔐</span>
+                    <span>SEGURIDAD - Securitas Direct</span>
+                </div>
+                <input type="text" class="search-box" placeholder="🔍 Buscar actividad..." onkeyup="filterTable('seguridad-table', this.value)">
+            </div>
+
+            <div class="table-container">
+                <table id="seguridad-table">
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>
+                                <span class="icon">👤</span>
+                                Coordinador<br>Oficina
+                            </th>
+                            <th>
+                                <span class="icon">🛒</span>
+                                Compras<br>(0.5 FTE)
+                            </th>
+                            <th>
+                                <span class="icon">🔧</span>
+                                Proveedor<br>Securitas
+                            </th>
+                            <th>
+                                <span class="icon">👥</span>
+                                Usuario<br>Final
+                            </th>
+                            <th>
+                                <span class="icon">💰</span>
+                                Finance
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="category-row">
+                            <td colspan="6">🔧 INCIDENCIAS OPERATIVAS</td>
+                        </tr>
+                        <tr>
+                            <td>Salto de alarma</td>
+                            <td class="raci-cell raci-ra">R/A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Verificación falsa alarma</td>
+                            <td class="raci-cell raci-ra">R/A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Gestión incidente real</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Reporte incidente</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        
+                        <tr class="category-row">
+                            <td colspan="6">📝 GESTIÓN CONTRACTUAL</td>
+                        </tr>
+                        <tr>
+                            <td>Alta nueva ubicación</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Baja ubicación</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Modificación sistema</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Negociación contrato</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        
+                        <tr class="category-row">
+                            <td colspan="6">🔧 MANTENIMIENTO SISTEMA</td>
+                        </tr>
+                        <tr>
+                            <td>Mantenimiento preventivo</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Actualización tecnológica</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        <tr>
+                            <td>Formación usuarios</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="contacts-box">
+                <h4>📞 Contactos Seguridad</h4>
+                <p><strong>Proveedor:</strong> Securitas Direct</p>
+                <p><strong>Contacto directo:</strong> David Casado Oliva</p>
+                <p><strong>Teléfono:</strong> +34 600 98 50 16</p>
+                <p><strong>Email:</strong> david.casado@securitasdirect.es</p>
+                <p><strong>Disponibilidad:</strong> 24/7 para alertas de seguridad</p>
+            </div>
+        </div>
+
+        <!-- SERVICIO: MANTENIMIENTO -->
+        <div id="mantenimiento" class="service-content">
+            <div class="service-header">
+                <div class="service-title">
+                    <span class="icon">🛠️</span>
+                    <span>MANTENIMIENTO - Proveedores Locales</span>
+                </div>
+                <input type="text" class="search-box" placeholder="🔍 Buscar actividad..." onkeyup="filterTable('mantenimiento-table', this.value)">
+            </div>
+
+            <div class="table-container">
+                <table id="mantenimiento-table">
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>
+                                <span class="icon">👤</span>
+                                Coordinador<br>Oficina
+                            </th>
+                            <th>
+                                <span class="icon">🛒</span>
+                                Compras<br>(0.5 FTE)
+                            </th>
+                            <th>
+                                <span class="icon">🔧</span>
+                                Proveedor<br>Local
+                            </th>
+                            <th>
+                                <span class="icon">👥</span>
+                                Usuario<br>Final
+                            </th>
+                            <th>
+                                <span class="icon">💰</span>
+                                Finance
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="category-row">
+                            <td colspan="6">📅 MANTENIMIENTO PREVENTIVO</td>
+                        </tr>
+                        <tr>
+                            <td>Planificación anual</td>
+                            <td class="raci-cell raci-ra">A/R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Contratación proveedor local</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Ejecución mantenimiento</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Validación trabajos</td>
+                            <td class="raci-cell raci-ra">A/R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        
+                        <tr class="category-row">
+                            <td colspan="6">⚡ MANTENIMIENTO CORRECTIVO</td>
+                        </tr>
+                        <tr>
+                            <td>Detección avería</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Evaluación urgencia</td>
+                            <td class="raci-cell raci-ra">A/R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Solicitud proveedor local</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Autorización gasto (< 3.000€)</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        <tr>
+                            <td>Autorización gasto (> 3.000€)</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        <tr>
+                            <td>Ejecución reparación</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Validación y cierre</td>
+                            <td class="raci-cell raci-ra">A/R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        
+                        <tr class="category-row">
+                            <td colspan="6">👥 GESTIÓN PROVEEDORES</td>
+                        </tr>
+                        <tr>
+                            <td>Selección proveedor local</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Evaluación desempeño</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                        </tr>
+                        <tr>
+                            <td>Homologación proveedor</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="contacts-box">
+                <h4>📞 Contactos Mantenimiento</h4>
+                <p><strong>Proveedores:</strong> Locales por oficina</p>
+                <p><strong>Homologación:</strong> ComprasEspMail@bureauveritas.com</p>
+                <p><strong>Umbrales de aprobación:</strong></p>
+                <p>• < 3.000€: Coordinador Oficina</p>
+                <p>• > 3.000€: Compras + Finance</p>
+            </div>
+        </div>
+
+        <!-- SERVICIO: LYRECO -->
+        <div id="lyreco" class="service-content">
+            <div class="service-header">
+                <div class="service-title">
+                    <span class="icon">📦</span>
+                    <span>LYRECO - Suministros de Oficina</span>
+                </div>
+                <input type="text" class="search-box" placeholder="🔍 Buscar actividad..." onkeyup="filterTable('lyreco-table', this.value)">
+            </div>
+
+            <div class="table-container">
+                <table id="lyreco-table">
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>
+                                <span class="icon">👤</span>
+                                Coordinador<br>Oficina
+                            </th>
+                            <th>
+                                <span class="icon">🛒</span>
+                                Compras<br>(0.5 FTE)
+                            </th>
+                            <th>
+                                <span class="icon">👥</span>
+                                Usuario<br>Final
+                            </th>
+                            <th>
+                                <span class="icon">💰</span>
+                                Finance
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="category-row">
+                            <td colspan="5">📦 PEDIDOS ESTÁNDAR</td>
+                        </tr>
+                        <tr>
+                            <td>Solicitud pedido catálogo</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Validación pedido</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Recepción y distribución</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        
+                        <tr class="category-row">
+                            <td colspan="5">⚠️ PEDIDOS FUERA CATÁLOGO</td>
+                        </tr>
+                        <tr>
+                            <td>Solicitud producto especial</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Evaluación necesidad</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        <tr>
+                            <td>Autorización compra</td>
+                            <td class="raci-cell raci-a">A</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        <tr>
+                            <td>Gestión pedido</td>
+                            <td class="raci-cell raci-r">R</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-empty">-</td>
+                        </tr>
+                        
+                        <tr class="category-row">
+                            <td colspan="5">🏢 GESTIÓN BU OFICINA (0415OF)</td>
+                        </tr>
+                        <tr>
+                            <td>Gestión pedidos BU</td>
+                            <td class="raci-cell raci-ra">A/R</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-c">C</td>
+                        </tr>
+                        <tr>
+                            <td>Control presupuesto</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-c">C</td>
+                            <td class="raci-cell raci-i">I</td>
+                            <td class="raci-cell raci-a">A</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="contacts-box">
+                <h4>📞 Contactos Lyreco</h4>
+                <p><strong>Portal:</strong> Acceso directo usuarios finales</p>
+                <p><strong>Validación:</strong> Coordinador de Oficina</p>
+                <p><strong>BU 0415OF:</strong> Gestionada por Coordinador según instrucciones Compras</p>
+                <p><strong>Catálogo nacional:</strong> Gestionado por Compras</p>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p><strong>Bureau Veritas - España y Portugal</strong> | Equipo Compras | Versión 1.0 - Febrero 2026</p>
+            <p>📧 <a href="mailto:ComprasEspMail@bureauveritas.com">ComprasEspMail@bureauveritas.com</a> | ☎️ 912 702 110</p>
+            <p>🌐 <a href="https://bureauveritas.sharepoint.com/teams/COMPRASSWE/SitePages/FACILITY.aspx" target="_blank">SharePoint Facility</a></p>
+            <p style="margin-top: 15px; font-size: 0.8em; color: #999;">
+                Última actualización: <span id="last-update"></span>
+            </p>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // Función para cambiar de servicio
+        function showService(serviceName) {
+            // Ocultar todos los contenidos
+            var contents = document.getElementsByClassName('service-content');
+            for (var i = 0; i < contents.length; i++) {
+                contents[i].classList.remove('active');
+            }
+
+            // Remover active de todos los botones
+            var buttons = document.getElementsByClassName('service-btn');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('active');
+            }
+
+            // Mostrar contenido seleccionado
+            document.getElementById(serviceName).classList.add('active');
+
+            // Marcar botón como activo
+            event.currentTarget.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Función de búsqueda
+        function filterTable(tableId, searchValue) {
+            var table = document.getElementById(tableId);
+            var tr = table.getElementsByTagName("tr");
+            var filter = searchValue.toUpperCase();
+
+            for (var i = 1; i < tr.length; i++) {
+                // Saltar filas de categoría
+                if (tr[i].classList.contains("category-row")) {
+                    tr[i].style.display = "";
+                    continue;
+                }
+
+                var td = tr[i].getElementsByTagName("td")[0];
+                if (td) {
+                    var txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        // Mostrar fecha de última actualización
+        document.addEventListener('DOMContentLoaded', function() {
+            var today = new Date();
+            var dateString = today.toLocaleDateString('es-ES', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('last-update').textContent = dateString;
+
+            console.log('✅ Matriz RACI Facilities Iberia cargada correctamente');
+        });
+
+        // Función para exportar servicio actual a CSV
+        function exportCurrentService() {
+            var activeContent = document.querySelector('.service-content.active');
+            var table = activeContent.querySelector('table');
+            var serviceName = activeContent.id;
+            
+            var csv = [];
+            var rows = table.querySelectorAll("tr");
+            
+            for (var i = 0; i < rows.length; i++) {
+                var row = [], cols = rows[i].querySelectorAll("td, th");
+                
+                for (var j = 0; j < cols.length; j++) {
+                    row.push(cols[j].innerText);
+                }
+                
+                csv.push(row.join(","));
+            }
+            
+            var csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+            var downloadLink = document.createElement("a");
+            downloadLink.download = "matriz_raci_" + serviceName + "_bv_iberia.csv";
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+        }
+    </script>
+</body>
+</html>

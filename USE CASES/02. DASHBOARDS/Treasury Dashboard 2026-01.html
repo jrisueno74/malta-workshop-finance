@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasury and Performance Executive Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bv-primary: #00049E;
+            --bv-primary-light: #1a1fb8;
+            --bv-primary-dark: #000347;
+            --bv-accent: #00d4ff;
+            --bv-accent-secondary: #00a8cc;
+            --bv-success: #00d946;
+            --bv-warning: #ff9800;
+            --bv-danger: #f44336;
+            --bv-dark-bg: #0a0e2e;
+            --bv-card-bg: #141829;
+            --bv-border: rgba(0, 212, 255, 0.2);
+            --bv-text-primary: #ffffff;
+            --bv-text-secondary: #b0b8d4;
+        }
+
+        body.light-theme {
+            --bv-primary: #003d99;
+            --bv-primary-light: #0052cc;
+            --bv-primary-dark: #002966;
+            --bv-accent: #0066ff;
+            --bv-accent-secondary: #0052cc;
+            --bv-success: #00b300;
+            --bv-warning: #ff8c00;
+            --bv-danger: #ff3333;
+            --bv-dark-bg: #f5f5f5;
+            --bv-card-bg: #ffffff;
+            --bv-border: rgba(0, 102, 255, 0.2);
+            --bv-text-primary: #1a1a1a;
+            --bv-text-secondary: #666666;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
+            background: linear-gradient(135deg, var(--bv-dark-bg) 0%, #0f1428 50%, #1a1f3a 100%);
+            color: var(--bv-text-primary);
+            padding: 24px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body.light-theme {
+            background: linear-gradient(135deg, #f0f2f5 0%, #e8eaed 50%, #f5f5f5 100%);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(0, 4, 158, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+            transition: background 0.3s ease;
+        }
+
+        body.light-theme::before {
+            background: radial-gradient(circle at 20% 50%, rgba(0, 102, 255, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(0, 52, 153, 0.03) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 24px;
+            padding: 32px 40px;
+            background: linear-gradient(135deg, rgba(0, 4, 158, 0.15) 0%, rgba(0, 212, 255, 0.08) 100%);
+            border: 1px solid var(--bv-border);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 4, 158, 0.15),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        body.light-theme header {
+            background: linear-gradient(135deg, rgba(0, 52, 153, 0.08) 0%, rgba(0, 102, 255, 0.05) 100%);
+            box-shadow: 0 8px 32px rgba(0, 52, 153, 0.1),
+                        inset 0 1px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(100px, -100px);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-logo {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .header-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .header-logo-left {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+            transition: opacity 0.3s ease;
+        }
+
+        .header-logo-left.dark {
+            display: block;
+        }
+
+        .header-logo-left.light {
+            display: none;
+        }
+
+        body.light-theme .header-logo-left.dark {
+            display: none;
+        }
+
+        body.light-theme .header-logo-left.light {
+            display: block;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, var(--bv-accent) 0%, #00d4ff 50%, #00a8cc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 8px rgba(0, 212, 255, 0.2);
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        body.light-theme h1 {
+            background: linear-gradient(135deg, #0066ff 0%, #0052cc 50%, #003d99 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--bv-accent);
+            border: 1.5px solid var(--bv-accent);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .theme-toggle {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--bv-accent);
+            border: 1.5px solid var(--bv-accent);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+            transform: translateY(-2px) rotate(20deg);
+        }
+
+        select {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1.5px solid var(--bv-border);
+            background: linear-gradient(135deg, rgba(0, 4, 158, 0.15) 0%, rgba(0, 212, 255, 0.08) 100%);
+            color: var(--bv-text-primary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        body.light-theme select {
+            background: linear-gradient(135deg, rgba(0, 52, 153, 0.08) 0%, rgba(0, 102, 255, 0.05) 100%);
+        }
+
+        select:hover {
+            border-color: var(--bv-accent);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--bv-accent);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        select option {
+            background: var(--bv-dark-bg);
+            color: var(--bv-text-primary);
+        }
+
+        body.light-theme select option {
+            background: #ffffff;
+            color: #1a1a1a;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(0, 4, 158, 0.2) 0%, rgba(0, 212, 255, 0.08) 100%);
+            border: 1.5px solid var(--bv-border);
+            border-left: 4px solid var(--bv-accent);
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0, 4, 158, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.light-theme .kpi-card {
+            background: linear-gradient(135deg, rgba(0, 52, 153, 0.08) 0%, rgba(0, 102, 255, 0.05) 100%);
+            box-shadow: 0 8px 32px rgba(0, 52, 153, 0.1),
+                        inset 0 1px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--bv-accent);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .kpi-card.negative {
+            border-left-color: var(--bv-danger);
+            border-color: rgba(244, 67, 54, 0.4);
+        }
+
+        .kpi-card.negative:hover {
+            border-color: var(--bv-danger);
+            box-shadow: 0 12px 40px rgba(244, 67, 54, 0.35),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--bv-text-secondary);
+            margin-bottom: 8px;
+            letter-spacing: 1.2px;
+            font-weight: 700;
+            position: relative;
+            z-index: 2;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: var(--bv-text-primary);
+            position: relative;
+            z-index: 2;
+            line-height: 1.2;
+        }
+
+        .kpi-value.negative {
+            color: var(--bv-danger);
+        }
+
+        .kpi-comparison {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .comparison-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .comparison-label {
+            color: var(--bv-text-secondary);
+            min-width: 35px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .comparison-badge {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .comparison-badge.positive {
+            background: linear-gradient(135deg, #00d946 0%, #00a833 100%);
+            box-shadow: 0 4px 12px rgba(0, 217, 70, 0.3);
+        }
+
+        .comparison-badge.negative {
+            background: linear-gradient(135deg, var(--bv-danger) 0%, #d32f2f 100%);
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+        }
+
+        .comparison-value {
+            font-weight: 800;
+            color: var(--bv-text-primary);
+            font-size: 13px;
+            line-height: 1.2;
+        }
+
+        .comparison-value.negative {
+            color: var(--bv-danger);
+        }
+
+        .billing-ytd-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .billing-ytd-main {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .billing-ytd-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--bv-text-primary);
+            line-height: 1;
+        }
+
+        .billing-ytd-percent {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--bv-accent);
+            line-height: 1;
+        }
+
+        .billing-ytd-label {
+            font-size: 10px;
+            color: var(--bv-text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .chart-container {
+            background: linear-gradient(135deg, rgba(0, 4, 158, 0.2) 0%, rgba(0, 212, 255, 0.08) 100%);
+            border: 1.5px solid var(--bv-border);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0, 4, 158, 0.25),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            position: relative;
+            height: 400px;
+            backdrop-filter: blur(15px);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        body.light-theme .chart-container {
+            background: linear-gradient(135deg, rgba(0, 52, 153, 0.08) 0%, rgba(0, 102, 255, 0.05) 100%);
+            box-shadow: 0 12px 40px rgba(0, 52, 153, 0.1),
+                        inset 0 1px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(80px, -80px);
+        }
+
+        .chart-container:hover {
+            border-color: var(--bv-accent);
+            box-shadow: 0 16px 48px rgba(0, 212, 255, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .chart-title {
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--bv-accent) 0%, #00a8cc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            z-index: 2;
+        }
+
+        canvas {
+            max-height: 350px;
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (max-width: 1600px) {
+            .kpi-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .charts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 24px;
+            }
+
+            .header-title {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .controls {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            select, .btn, .theme-toggle {
+                width: 100%;
+            }
+
+            .chart-container {
+                padding: 20px;
+                height: 350px;
+            }
+        }
+    
+        /* === Insight Layer (Executive Narrative) === */
+        .insight-panel{
+            margin: 18px 0 10px 0;
+            padding: 16px 16px 12px 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(0,212,255,0.18);
+            background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(108,92,231,0.06));
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        body.light-theme .insight-panel{
+            border: 1px solid rgba(0,102,255,0.18);
+            background: linear-gradient(135deg, rgba(0,102,255,0.08), rgba(0,0,0,0.02));
+            box-shadow: 0 10px 25px rgba(0,0,0,0.10);
+        }
+        .insight-panel:before{
+            content:"";
+            position:absolute;
+            top:-40px; right:-40px;
+            width:160px; height:160px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,212,255,0.18), rgba(0,212,255,0.00) 70%);
+            filter: blur(0.2px);
+            pointer-events:none;
+        }
+        .insight-head{
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap:14px;
+            margin-bottom:10px;
+        }
+        .insight-title{
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+        .insight-subtitle{
+            margin-top:4px;
+            font-size: 0.88rem;
+            opacity: 0.85;
+        }
+        .insight-badges{
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+            justify-content:flex-end;
+        }
+        .insight-badge{
+            font-size: 0.78rem;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,212,255,0.22);
+            background: rgba(0,0,0,0.20);
+            white-space: nowrap;
+        }
+        body.light-theme .insight-badge{
+            background: rgba(255,255,255,0.75);
+            border: 1px solid rgba(0,102,255,0.22);
+        }
+        .insight-list{
+            list-style:none;
+            margin: 0;
+            padding: 0;
+            display:grid;
+            gap: 8px;
+        }
+        .insight-item{
+            display:flex;
+            gap:10px;
+            align-items:flex-start;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(0,0,0,0.16);
+            transition: transform 180ms ease, background 180ms ease;
+        }
+        body.light-theme .insight-item{
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .insight-item:hover{
+            transform: translateY(-1px);
+            background: rgba(0,0,0,0.22);
+        }
+        body.light-theme .insight-item:hover{
+            background: rgba(255,255,255,0.85);
+        }
+        .insight-dot{
+            width: 9px;
+            height: 9px;
+            margin-top: 6px;
+            border-radius: 50%;
+            background: rgba(0,212,255,0.9);
+            box-shadow: 0 0 0 4px rgba(0,212,255,0.12);
+            flex: 0 0 auto;
+        }
+        body.light-theme .insight-dot{
+            background: rgba(0,102,255,0.9);
+            box-shadow: 0 0 0 4px rgba(0,102,255,0.10);
+        }
+        .insight-text{
+            line-height: 1.25rem;
+            font-size: 0.92rem;
+        }
+        .insight-text b{ font-weight: 800; }
+        .risk-flags{
+            margin-top: 10px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+        }
+        .risk-flag{
+            font-size: 0.80rem;
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0,0,0,0.14);
+        }
+        body.light-theme .risk-flag{
+            background: rgba(255,255,255,0.7);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .risk-red{
+            border-color: rgba(255,71,87,0.35);
+            box-shadow: 0 0 0 4px rgba(255,71,87,0.10) inset;
+        }
+        .risk-amber{
+            border-color: rgba(255,193,7,0.35);
+            box-shadow: 0 0 0 4px rgba(255,193,7,0.10) inset;
+        }
+        .risk-green{
+            border-color: rgba(46,213,115,0.35);
+            box-shadow: 0 0 0 4px rgba(46,213,115,0.10) inset;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-title">
+                <img src="https://jrisueno74.github.io/RESOURCES_BV/LOGO%20WHITE.png" 
+                     alt="BV Logo Dark" 
+                     class="header-logo-left dark">
+                <img src="https://jrisueno74.github.io/RESOURCES_BV/LOGO%20GREY.png" 
+                     alt="BV Logo Light" 
+                     class="header-logo-left light">
+                <h1>💼 TREASURY & PERFORMANCE EXECUTIVE</h1>
+                <img src="https://raw.githubusercontent.com/ricmarmor-code/ibera/main/iberia-removebg-preview.png" 
+                     alt="Iberia Logo" 
+                     class="header-logo">
+            </div>
+            <div class="controls">
+                <select id="pLineSelect">
+                    <option value="all">All P Lines</option>
+                </select>
+                <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌙</button>
+            </div>
+        </header>
+
+        <div id="content">
+            
+            <div class="insight-panel" id="insightPanel" style="display:none;">
+                <div class="insight-head">
+                    <div>
+                        <div class="insight-title">🧠 Executive Highlights</div>
+                        <div class="insight-subtitle" id="insightSubtitle"></div>
+                    </div>
+                    <div class="insight-badges" id="insightBadges"></div>
+                </div>
+                <ul class="insight-list" id="insightList"></ul>
+                <div class="risk-flags" id="riskFlags"></div>
+            </div>
+            <div class="kpi-grid" id="kpiGrid"></div>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">📊 DSO vs CIDS - Average Last 13 Months</div>
+                    <canvas id="dsoChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">📈 Debt Distribution by Aging (%)</div>
+                    <canvas id="debtChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">💬 Nb Queries - Last 13 Months</div>
+                    <canvas id="queriesChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">💰 Collection vs Invoicing - Last 13 Months</div>
+                    <canvas id="collectionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const allData = [{"YEAR":24,"MONTH":1,"P Line":"AFC","KPI":"OTROS","Revenue":53787.01,"Billing":0,"TOTAL AR":153167.99,"DSO_":51.41808088790593,"CIDS_":51.41808088790593,"Past Due":102686.59,"Current ":50481.4,"  1-30":43087.670000000006," 31-90":42357.560000000005,">90":17241.359999999997},{"YEAR":24,"MONTH":1,"P Line":"BIC","KPI":"OTROS","Revenue":985936.8799999999,"Billing":0,"TOTAL AR":3104747.9499999997,"DSO_":66.7838726566658,"CIDS_":74.60565618110753,"Past Due":1435938.69,"Current ":1668809.2600000002,"  1-30":675915.5600000005," 31-90":437417.18000000017,">90":322605.95000000007},{"YEAR":24,"MONTH":1,"P Line":"BIO","KPI":"OTROS","Revenue":3558942.99,"Billing":0,"TOTAL AR":11130425.450000001,"DSO_":58.50943970356332,"CIDS_":83.14098924488547,"Past Due":4391000.0600000005,"Current ":6732047.749999999,"  1-30":2716643.999999999," 31-90":953568.24,">90":728165.4600000001},{"YEAR":24,"MONTH":1,"P Line":"CER","KPI":"OTROS","Revenue":2379067.96,"Billing":0,"TOTAL AR":5657262.620000001,"DSO_":45.09443909090622,"CIDS_":47.22584714229923,"Past Due":2765239.750000001,"Current ":2892022.8699999996,"  1-30":1361320.94," 31-90":770442.63,">90":633476.1799999999},{"YEAR":24,"MONTH":1,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":46.566929088629315,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":1,"P Line":"IND","KPI":"OTROS","Revenue":1643638.3200000003,"Billing":0,"TOTAL AR":5973642.8500000015,"DSO_":75.40599120331461,"CIDS_":100.95525603018912,"Past Due":1756592.9800000004,"Current ":4217049.869999998,"  1-30":852783.5599999999," 31-90":502113.46,">90":401695.95999999996},{"YEAR":24,"MONTH":1,"P Line":"Total","KPI":"OTROS","Revenue":8621373.16,"Billing":0,"TOTAL AR":26019246.860000003,"DSO_":58.55248731402194,"CIDS_":75.07179439590233,"Past Due":10451458.070000002,"Current ":15560411.149999999,"  1-30":5649751.7299999995," 31-90":2705899.0700000003,">90":2103184.91},{"YEAR":24,"MONTH":2,"P Line":"AFC","KPI":"OTROS","Revenue":67486.23999999999,"Billing":0,"TOTAL AR":143172.92,"DSO_":53.854858530489864,"CIDS_":53.854858530489864,"Past Due":77445.36,"Current ":85606.76000000002,"  1-30":56309.87," 31-90":49415.47,">90":25402.91},{"YEAR":24,"MONTH":2,"P Line":"BIC","KPI":"OTROS","Revenue":1058023.05,"Billing":0,"TOTAL AR":3143375.2500000005,"DSO_":69.24560097301477,"CIDS_":77.40502567442849,"Past Due":1265976.5100000002,"Current ":2020712.5,"  1-30":773392.9400000004," 31-90":325027.87,">90":326798.0200000001},{"YEAR":24,"MONTH":2,"P Line":"BIO","KPI":"OTROS","Revenue":3963626.5299999993,"Billing":0,"TOTAL AR":10886956.67,"DSO_":58.48811800047781,"CIDS_":82.69023626644568,"Past Due":3804068.9400000004,"Current ":7981791.789999997,"  1-30":2252836.5199999986," 31-90":946740.9500000004,">90":803196.45},{"YEAR":24,"MONTH":2,"P Line":"CER","KPI":"OTROS","Revenue":3140465.2900000005,"Billing":0,"TOTAL AR":6245511.95,"DSO_":53.33313489270914,"CIDS_":56.369297734710386,"Past Due":2437419.3399999994,"Current ":4352526.59,"  1-30":1721234.4499999995," 31-90":826215.4,">90":729793.27},{"YEAR":24,"MONTH":2,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":45.667376048218244,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":2,"P Line":"IND","KPI":"OTROS","Revenue":2076747.56,"Billing":0,"TOTAL AR":4665084.66,"DSO_":60.24392107897708,"CIDS_":95.17563605965987,"Past Due":1500850.44,"Current ":4302960.23,"  1-30":822574.57," 31-90":351724.0500000001,">90":404352.43},{"YEAR":24,"MONTH":2,"P Line":"Total","KPI":"OTROS","Revenue":10306348.67,"Billing":0,"TOTAL AR":25084101.45,"DSO_":58.50749919240352,"CIDS_":77.01763194504952,"Past Due":9085760.59,"Current ":18743597.869999997,"  1-30":5626348.349999999," 31-90":2499123.7400000007,">90":2289543.08},{"YEAR":24,"MONTH":3,"P Line":"AFC","KPI":"OTROS","Revenue":51865.63999999999,"Billing":0,"TOTAL AR":121936.60999999997,"DSO_":51.95806376333969,"CIDS_":51.95806376333969,"Past Due":62780,"Current ":59156.61000000001,"  1-30":26257.31," 31-90":21406.489999999998,">90":15116.2},{"YEAR":24,"MONTH":3,"P Line":"BIC","KPI":"OTROS","Revenue":1082709.1400000001,"Billing":0,"TOTAL AR":2845936.3399999994,"DSO_":72.24487967487734,"CIDS_":83.77016868293123,"Past Due":1363740.07,"Current ":1481674.7600000002,"  1-30":610449.18," 31-90":426260.82999999996,">90":327551.57},{"YEAR":24,"MONTH":3,"P Line":"BIO","KPI":"OTROS","Revenue":3614136.4900000007,"Billing":0,"TOTAL AR":10652313.96,"DSO_":62.0258934673753,"CIDS_":84.36541341850013,"Past Due":4026980.5199999996,"Current ":6622689.449999998,"  1-30":2162737.2600000002," 31-90":1001462.8599999999,">90":865424.39},{"YEAR":24,"MONTH":3,"P Line":"CER","KPI":"OTROS","Revenue":3075200.2500000005,"Billing":0,"TOTAL AR":6102612.080000001,"DSO_":56.24057531481609,"CIDS_":63.12769188794401,"Past Due":2647735.8699999987,"Current ":3454876.2099999995,"  1-30":1382330.0199999998," 31-90":544680.35,">90":720725.4999999999},{"YEAR":24,"MONTH":3,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":55.41522735652315,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":3,"P Line":"IND","KPI":"OTROS","Revenue":1827831.8599999999,"Billing":0,"TOTAL AR":4734826.41,"DSO_":69.31575763187882,"CIDS_":106.60891783014213,"Past Due":1394993.04,"Current ":3339500.619999999,"  1-30":657650.1400000002," 31-90":312438.76,">90":425236.89},{"YEAR":24,"MONTH":3,"P Line":"Total","KPI":"OTROS","Revenue":9651743.38,"Billing":0,"TOTAL AR":24457625.400000002,"DSO_":62.66419092149291,"CIDS_":82.09899130005998,"Past Due":9496229.5,"Current ":14957897.649999997,"  1-30":4839423.910000001," 31-90":2306249.29,">90":2354054.5500000003},{"YEAR":24,"MONTH":4,"P Line":"AFC","KPI":"OTROS","Revenue":60062.229999999996,"Billing":0,"TOTAL AR":139275.18,"DSO_":57.62254108975243,"CIDS_":57.62254108975243,"Past Due":77833.17,"Current ":61442.01,"  1-30":34633.420000000006," 31-90":24391.43,">90":18808.32},{"YEAR":24,"MONTH":4,"P Line":"BIC","KPI":"OTROS","Revenue":1096353.8100000003,"Billing":0,"TOTAL AR":2902841.7199999997,"DSO_":71.48206848948193,"CIDS_":85.29705845879181,"Past Due":1313367.89,"Current ":1589473.8299999994,"  1-30":519218.2699999999," 31-90":416073.23,">90":378076.39},{"YEAR":24,"MONTH":4,"P Line":"BIO","KPI":"OTROS","Revenue":3708386.650000001,"Billing":0,"TOTAL AR":10522783.309999999,"DSO_":61.02759461201674,"CIDS_":81.76728590307516,"Past Due":4145420.739999999,"Current ":6375839.629999993,"  1-30":2257725.1799999992," 31-90":1061763.8800000004,">90":827454.62},{"YEAR":24,"MONTH":4,"P Line":"CER","KPI":"OTROS","Revenue":3474634.5600000005,"Billing":0,"TOTAL AR":7109009.409999998,"DSO_":55.771236731539034,"CIDS_":60.67440484426014,"Past Due":2561591.3400000003,"Current ":4546934.069999999,"  1-30":1238959.02," 31-90":646097.3599999998,">90":677018.96},{"YEAR":24,"MONTH":4,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":54.46826398678842,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":4,"P Line":"IND","KPI":"OTROS","Revenue":1725752.84,"Billing":0,"TOTAL AR":5523223.890000001,"DSO_":74.8942331676339,"CIDS_":105.82879218723315,"Past Due":1519801.1699999997,"Current ":4003422.7200000007,"  1-30":818817.2399999999," 31-90":435663.20999999996,">90":265320.7200000001},{"YEAR":24,"MONTH":4,"P Line":"Total","KPI":"OTROS","Revenue":10065190.090000002,"Billing":0,"TOTAL AR":26197133.509999998,"DSO_":62.87302002836163,"CIDS_":79.777195011775,"Past Due":9618014.309999999,"Current ":16577112.259999992,"  1-30":4869353.129999999," 31-90":2583989.11,">90":2166679.0100000002},{"YEAR":24,"MONTH":5,"P Line":"AFC","KPI":"OTROS","Revenue":77631.20000000001,"Billing":0,"TOTAL AR":135756.66,"DSO_":53.08298913449842,"CIDS_":53.08298913449842,"Past Due":69882.06999999999,"Current ":65874.59,"  1-30":28706.7," 31-90":25864.65,">90":15310.72},{"YEAR":24,"MONTH":5,"P Line":"BIC","KPI":"OTROS","Revenue":1163229.42,"Billing":0,"TOTAL AR":3015502.86,"DSO_":72.32284089296552,"CIDS_":86.52558907570247,"Past Due":1349549.7299999997,"Current ":1665953.1300000001,"  1-30":566867.5900000001," 31-90":338619.19000000006,">90":444062.95},{"YEAR":24,"MONTH":5,"P Line":"BIO","KPI":"OTROS","Revenue":3945131.3999999994,"Billing":0,"TOTAL AR":10359784.19,"DSO_":60.55380993165011,"CIDS_":80.97184785964882,"Past Due":4009465.200000001,"Current ":6350318.989999996,"  1-30":1929697.14," 31-90":1240361.3300000005,">90":839406.73},{"YEAR":24,"MONTH":5,"P Line":"CER","KPI":"OTROS","Revenue":3910013.43,"Billing":0,"TOTAL AR":7668690.470000001,"DSO_":56.728411756880725,"CIDS_":63.72782018391068,"Past Due":2866167.4200000004,"Current ":4802523.05,"  1-30":1580499.44," 31-90":627268.8600000001,">90":658399.12},{"YEAR":24,"MONTH":5,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":55.04708616212656,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":5,"P Line":"IND","KPI":"OTROS","Revenue":1915694.52,"Billing":0,"TOTAL AR":5501181.81,"DSO_":68.5757196522766,"CIDS_":97.90417849052837,"Past Due":1529384.77,"Current ":3971797.04,"  1-30":770318.6199999999," 31-90":488229.9999999999,">90":270836.1500000001},{"YEAR":24,"MONTH":5,"P Line":"Total","KPI":"OTROS","Revenue":11011699.969999999,"Billing":0,"TOTAL AR":26680915.99,"DSO_":61.94211741697292,"CIDS_":79.08548432989053,"Past Due":9824449.190000001,"Current ":16856466.799999993,"  1-30":4876089.489999999," 31-90":2720344.0300000007,">90":2228015.67},{"YEAR":24,"MONTH":6,"P Line":"AFC","KPI":"OTROS","Revenue":90995.88999999997,"Billing":0,"TOTAL AR":179541.22,"DSO_":55.09170432703519,"CIDS_":51.8063260827407,"Past Due":84891.59000000001,"Current ":94649.62999999999,"  1-30":40440.670000000006," 31-90":24803.390000000003,">90":19647.53},{"YEAR":24,"MONTH":6,"P Line":"BIC","KPI":"OTROS","Revenue":1194863.8000000003,"Billing":0,"TOTAL AR":3231218.07,"DSO_":74.23102605211416,"CIDS_":90.99855931230734,"Past Due":1448349.34,"Current ":1782868.7300000004,"  1-30":633190.1699999998," 31-90":432332.56000000006,">90":380830.1099999999},{"YEAR":24,"MONTH":6,"P Line":"BIO","KPI":"OTROS","Revenue":3847596.5600000015,"Billing":0,"TOTAL AR":10215749.01,"DSO_":61.73143893837316,"CIDS_":83.1133421274864,"Past Due":3828910.09,"Current ":6386838.919999999,"  1-30":1869433.7399999993," 31-90":1078820.7600000002,">90":879541.5300000001},{"YEAR":24,"MONTH":6,"P Line":"CER","KPI":"OTROS","Revenue":4073299.3500000006,"Billing":0,"TOTAL AR":8728200.41,"DSO_":57.05020427762939,"CIDS_":63.92394718586617,"Past Due":3145752.3099999996,"Current ":5582448.1,"  1-30":1686858.05," 31-90":904227.4299999999,">90":546438.83},{"YEAR":24,"MONTH":6,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":39.89775527239515,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":6,"P Line":"IND","KPI":"OTROS","Revenue":1832048.99,"Billing":0,"TOTAL AR":5319854.899999999,"DSO_":69.60331412223164,"CIDS_":102.24392179422894,"Past Due":1492851.0699999998,"Current ":3827003.8299999996,"  1-30":651022.3999999998," 31-90":529059.28,">90":312769.39},{"YEAR":24,"MONTH":6,"P Line":"Total","KPI":"OTROS","Revenue":11038804.590000002,"Billing":0,"TOTAL AR":27674563.61,"DSO_":62.65497744951245,"CIDS_":80.32311740614796,"Past Due":10000754.399999999,"Current ":17673809.209999997,"  1-30":4880945.029999998," 31-90":2969243.420000001,">90":2139227.39},{"YEAR":24,"MONTH":7,"P Line":"AFC","KPI":"OTROS","Revenue":64351.08,"Billing":0,"TOTAL AR":138343.84,"DSO_":44.04665548544394,"CIDS_":44.04665548544394,"Past Due":75797.68999999999,"Current ":62546.15,"  1-30":41095.48," 31-90":20693.32,">90":14008.89},{"YEAR":24,"MONTH":7,"P Line":"BIC","KPI":"OTROS","Revenue":1074216.8800000001,"Billing":0,"TOTAL AR":3447238.0799999996,"DSO_":75.33893963682758,"CIDS_":89.1894194863571,"Past Due":1614246.17,"Current ":1825269.6900000006,"  1-30":727184.2400000003," 31-90":484998.00999999995,">90":410330.6400000001},{"YEAR":24,"MONTH":7,"P Line":"BIO","KPI":"OTROS","Revenue":3851600.710000002,"Billing":0,"TOTAL AR":9886147.090000002,"DSO_":59.74422080341528,"CIDS_":81.38656078066342,"Past Due":3898723.3099999996,"Current ":5983896.350000003,"  1-30":1916672.25," 31-90":1137941.7800000005,">90":849752.0400000005},{"YEAR":24,"MONTH":7,"P Line":"CER","KPI":"OTROS","Revenue":3615914.4899999998,"Billing":0,"TOTAL AR":8522905.909999998,"DSO_":55.29887096304502,"CIDS_":61.61533085661651,"Past Due":3600161.44,"Current ":4911212.0600000005,"  1-30":1995211.3800000008," 31-90":1027247.89,">90":589234.58},{"YEAR":24,"MONTH":7,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":41.247156714352535,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":7,"P Line":"IND","KPI":"OTROS","Revenue":1907908.9800000002,"Billing":0,"TOTAL AR":4785958.35,"DSO_":65.29729646041307,"CIDS_":101.59521675389249,"Past Due":1581845.5299999996,"Current ":3204112.82,"  1-30":791869.6800000003," 31-90":463171.0299999999,">90":326804.82000000007},{"YEAR":24,"MONTH":7,"P Line":"Total","KPI":"OTROS","Revenue":10513992.140000002,"Billing":0,"TOTAL AR":26780593.270000003,"DSO_":60.618230238390474,"CIDS_":78.38449430483698,"Past Due":10770774.139999999,"Current ":15987037.070000004,"  1-30":5472033.030000002," 31-90":3134052.0300000003,">90":2190130.9700000007},{"YEAR":24,"MONTH":8,"P Line":"AFC","KPI":"OTROS","Revenue":67246.03000000001,"Billing":0,"TOTAL AR":167644.69000000003,"DSO_":55.597935612761844,"CIDS_":55.597935612761844,"Past Due":83218.40999999997,"Current ":84426.27999999998,"  1-30":29083.72," 31-90":45259.83999999998,">90":8874.849999999999},{"YEAR":24,"MONTH":8,"P Line":"BIC","KPI":"OTROS","Revenue":807700.3300000001,"Billing":0,"TOTAL AR":3116210.4000000004,"DSO_":78.70652367499167,"CIDS_":97.7806958241552,"Past Due":1879570.9,"Current ":1236713.3,"  1-30":906081.4800000001," 31-90":504900.3900000001,">90":468589.03},{"YEAR":24,"MONTH":8,"P Line":"BIO","KPI":"OTROS","Revenue":2483098.77,"Billing":0,"TOTAL AR":9279009.679999996,"DSO_":63.646270719664685,"CIDS_":86.97125108472949,"Past Due":4377845.01,"Current ":4901164.669999997,"  1-30":2093435.569999998," 31-90":1355746.6099999999,">90":928155.5300000005},{"YEAR":24,"MONTH":8,"P Line":"CER","KPI":"OTROS","Revenue":1182857.6399999997,"Billing":0,"TOTAL AR":6543626.380000002,"DSO_":52.802022021918525,"CIDS_":58.925771470349716,"Past Due":4255029.42,"Current ":2288200.2,"  1-30":2045904.83," 31-90":1409316.5999999996,">90":799807.99},{"YEAR":24,"MONTH":8,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":44.5034201763103,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":8,"P Line":"IND","KPI":"OTROS","Revenue":1466813.54,"Billing":0,"TOTAL AR":4730781.070000001,"DSO_":74.31531269678983,"CIDS_":121.02530329124988,"Past Due":1629972.4199999997,"Current ":3100808.6499999994,"  1-30":616533.2600000001," 31-90":655329.43,">90":351312.69},{"YEAR":24,"MONTH":8,"P Line":"Total","KPI":"OTROS","Revenue":6007716.31,"Billing":0,"TOTAL AR":23837272.22,"DSO_":63.399664757425455,"CIDS_":84.37962177333786,"Past Due":12225636.159999998,"Current ":11611313.099999998,"  1-30":5691038.859999998," 31-90":3970552.8699999996,">90":2556740.0900000003},{"YEAR":24,"MONTH":9,"P Line":"AFC","KPI":"OTROS","Revenue":80586.52000000002,"Billing":0,"TOTAL AR":167832.78000000003,"DSO_":61.6974715267579,"CIDS_":61.6974715267579,"Past Due":88269.18999999999,"Current ":79563.59,"  1-30":51356.18000000001," 31-90":28008.61,">90":8904.400000000001},{"YEAR":24,"MONTH":9,"P Line":"BIC","KPI":"OTROS","Revenue":1072131.1799999995,"Billing":0,"TOTAL AR":3086827.59,"DSO_":79.38986312655183,"CIDS_":100.22980269715542,"Past Due":1510802.96,"Current ":1576024.6300000001,"  1-30":482184.36999999994," 31-90":575477.06,">90":453141.52999999985},{"YEAR":24,"MONTH":9,"P Line":"BIO","KPI":"OTROS","Revenue":3436642.920000001,"Billing":0,"TOTAL AR":9130846.270000001,"DSO_":64.63322165317288,"CIDS_":88.29491101813781,"Past Due":3543315.68,"Current ":5583305.719999996,"  1-30":1446081.4200000004," 31-90":1228750.04,">90":872794.1900000004},{"YEAR":24,"MONTH":9,"P Line":"CER","KPI":"OTROS","Revenue":3016320.37,"Billing":0,"TOTAL AR":6445873.530000001,"DSO_":58.98627834543845,"CIDS_":66.94339561849617,"Past Due":2925095.6900000004,"Current ":3520777.84,"  1-30":888276.8600000003," 31-90":1162514.06,">90":874304.77},{"YEAR":24,"MONTH":9,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":63.06029238571638,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":9,"P Line":"IND","KPI":"OTROS","Revenue":1869049.54,"Billing":0,"TOTAL AR":4714557.49,"DSO_":70.125258342496,"CIDS_":114.26009500367977,"Past Due":1350130.0599999998,"Current ":3364427.43,"  1-30":472287.24000000005," 31-90":563814.33,">90":314028.49},{"YEAR":24,"MONTH":9,"P Line":"Total","KPI":"OTROS","Revenue":9474730.530000001,"Billing":0,"TOTAL AR":23545937.660000004,"DSO_":65.51787571195895,"CIDS_":87.7498409512209,"Past Due":9417613.58,"Current ":14124099.209999995,"  1-30":3340186.0700000008," 31-90":3558564.1,">90":2523173.380000001},{"YEAR":24,"MONTH":10,"P Line":"AFC","KPI":"OTROS","Revenue":60829.07,"Billing":0,"TOTAL AR":173050.95000000004,"DSO_":61.615326250065834,"CIDS_":61.615326250065834,"Past Due":105798.74999999999,"Current ":67252.20000000001,"  1-30":38168.73," 31-90":49474.060000000005,">90":18155.959999999995},{"YEAR":24,"MONTH":10,"P Line":"BIC","KPI":"OTROS","Revenue":1181507.0999999999,"Billing":0,"TOTAL AR":3172936.42,"DSO_":82.91882415179751,"CIDS_":106.39509618636964,"Past Due":1496489.1700000002,"Current ":1675987.45,"  1-30":579484.31," 31-90":424053.6,">90":493411.06},{"YEAR":24,"MONTH":10,"P Line":"BIO","KPI":"OTROS","Revenue":4056586.5500000026,"Billing":0,"TOTAL AR":9902571.350000001,"DSO_":66.946463434335,"CIDS_":87.38547958770897,"Past Due":3414480.7600000007,"Current ":6479215.620000002,"  1-30":1630436.3300000005," 31-90":927593.4700000003,">90":865325.93},{"YEAR":24,"MONTH":10,"P Line":"CER","KPI":"OTROS","Revenue":4015654.2500000005,"Billing":0,"TOTAL AR":7556074.9399999995,"DSO_":66.41975575387951,"CIDS_":74.58802561780001,"Past Due":2546280.86,"Current ":5007751.6000000015,"  1-30":1160508.99," 31-90":589831.55,">90":797982.8},{"YEAR":24,"MONTH":10,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":71.59099930882849,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":10,"P Line":"IND","KPI":"OTROS","Revenue":1975126.38,"Billing":0,"TOTAL AR":5579970.570000002,"DSO_":78.92685343298902,"CIDS_":120.06554037494703,"Past Due":1533205.0699999998,"Current ":4046765.5000000005,"  1-30":756822.1," 31-90":252681.56000000003,">90":523701.41000000003},{"YEAR":24,"MONTH":10,"P Line":"Total","KPI":"OTROS","Revenue":11289703.350000001,"Billing":0,"TOTAL AR":26384604.230000004,"DSO_":70.65052002119937,"CIDS_":91.4277129590984,"Past Due":9096254.610000001,"Current ":17276972.370000005,"  1-30":4165420.4600000004," 31-90":2243634.24,">90":2698577.16},{"YEAR":24,"MONTH":11,"P Line":"AFC","KPI":"OTROS","Revenue":66726.84,"Billing":0,"TOTAL AR":168801.59,"DSO_":60.552110714617385,"CIDS_":60.552110714617385,"Past Due":89634.47000000002,"Current ":79167.12000000001,"  1-30":37715.28," 31-90":37097.62,">90":14821.570000000002},{"YEAR":24,"MONTH":11,"P Line":"BIC","KPI":"OTROS","Revenue":1182900.26,"Billing":0,"TOTAL AR":3514435.1599999997,"DSO_":75.25227431626288,"CIDS_":92.32941701349975,"Past Due":1474250.0899999999,"Current ":2040185.0699999994,"  1-30":533040.3700000001," 31-90":411021.32000000007,">90":530188.4},{"YEAR":24,"MONTH":11,"P Line":"BIO","KPI":"OTROS","Revenue":3799615.6900000004,"Billing":0,"TOTAL AR":9911017.390000002,"DSO_":60.67635491513734,"CIDS_":79.32347313515379,"Past Due":3533224.6699999995,"Current ":6352114.299999997,"  1-30":1903777.5399999998," 31-90":738851.0400000002,">90":916274.5100000002},{"YEAR":24,"MONTH":11,"P Line":"CER","KPI":"OTROS","Revenue":3964242.57,"Billing":0,"TOTAL AR":8463923.760000002,"DSO_":56.73554797577385,"CIDS_":63.47877016342623,"Past Due":3005827.03,"Current ":5456467.100000001,"  1-30":1798336.1600000001," 31-90":584237.01,">90":624883.49},{"YEAR":24,"MONTH":11,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"CIDS_":58.928974319573776,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0},{"YEAR":24,"MONTH":11,"P Line":"IND","KPI":"OTROS","Revenue":1933685.5499999996,"Billing":0,"TOTAL AR":5275957.680000002,"DSO_":64.26445172051709,"CIDS_":99.4152967593615,"Past Due":1363890.2699999998,"Current ":3896600.5800000005,"  1-30":656437.2," 31-90":324346.36,">90":398573.54000000004},{"YEAR":24,"MONTH":11,"P Line":"Total","KPI":"OTROS","Revenue":10947170.91,"Billing":0,"TOTAL AR":27334135.580000006,"DSO_":61.54788227697481,"CIDS_":78.96505187867973,"Past Due":9466826.53,"Current ":17824534.169999998,"  1-30":4929306.55," 31-90":2095553.35,">90":2484741.5100000002},{"YEAR":24,"MONTH":12,"P Line":"AFC","KPI":"OTROS","Revenue":77396.59000000001,"Billing":0,"TOTAL AR":204594.79,"COLLECTION":59708.770000000004,"INVOICING":95501.96999999999,"DSO_":74.2738625380631,"CIDS_":74.2738625380631,"Past Due":110876.70999999999,"Current ":93718.08,"  1-30":50831.05," 31-90":35297.42,">90":24748.24,"Average DSO":56.7342999883943,"Average CIDS":56.46051846803642,"Nb queries":10,"Amount queries":3293.5599999999995,"WIP":0},{"YEAR":24,"MONTH":12,"P Line":"BIC","KPI":"OTROS","Revenue":1114638.8499999999,"Billing":0,"TOTAL AR":3954790.8299999996,"COLLECTION":1388303.54,"INVOICING":1833969.4999999998,"DSO_":74.4832814892231,"CIDS_":85.81649991197136,"Past Due":1812151.9500000002,"Current ":2142638.880000001,"  1-30":845113.8200000003," 31-90":423746.52999999997,">90":543291.6,"Average DSO":74.36666626123117,"Average CIDS":89.19524904206479,"Nb queries":259,"Amount queries":323844.60000000003,"WIP":601752.6000000001},{"YEAR":24,"MONTH":12,"P Line":"BIO","KPI":"OTROS","Revenue":3387787.7999999984,"Billing":0,"TOTAL AR":10173564.440000003,"COLLECTION":5071773.129999999,"INVOICING":5366314.9799999995,"DSO_":58.56063508249117,"CIDS_":71.55814128755176,"Past Due":3689193.6099999994,"Current ":6482613.909999998,"  1-30":1767776.6599999997," 31-90":1053591.4700000004,">90":869508.6000000003,"Average DSO":61.378621771806074,"Average CIDS":82.58074430949891,"Nb queries":513,"Amount queries":323640.99999999994,"WIP":2258017.9800000004},{"YEAR":24,"MONTH":12,"P Line":"CER","KPI":"OTROS","Revenue":3001900.9699999997,"Billing":0,"TOTAL AR":7899393.619999999,"COLLECTION":4894775.549999999,"INVOICING":4342028.98,"DSO_":50.097548598394674,"CIDS_":53.61361954440421,"Past Due":3542399.3100000005,"Current ":4356994.310000001,"  1-30":2015737.91," 31-90":976363.9100000001,">90":550297.49,"Average DSO":55.37983547691089,"Average CIDS":61.184493520840284,"Nb queries":110,"Amount queries":188027.19,"WIP":554414.9199999999},{"YEAR":24,"MONTH":12,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":0,"COLLECTION":0,"INVOICING":3225216,"CIDS_":22.123264520999857,"Past Due":0,"Current ":0,"  1-30":0," 31-90":0,">90":0,"Average CIDS":49.87639544503852,"Nb queries":0,"Amount queries":0,"WIP":2077924.943219904},{"YEAR":24,"MONTH":12,"P Line":"IND","KPI":"OTROS","Revenue":1849971.6399999997,"Billing":0,"TOTAL AR":6480408.660000001,"COLLECTION":2197940.619999999,"INVOICING":3403019.22,"DSO_":69.61695616295232,"CIDS_":90.89900407192451,"Past Due":1333489.7199999997,"Current ":5146918.94,"  1-30":753500.6699999999," 31-90":312036.62999999995,">90":267952.42,"Average DSO":70.04875547270582,"Average CIDS":104.6647632205864,"Nb queries":64,"Amount queries":155120.1,"WIP":1981074.3699999996},{"YEAR":24,"MONTH":12,"P Line":"Total","KPI":"OTROS","Revenue":9431695.849999998,"Billing":0,"TOTAL AR":28712752.34,"COLLECTION":13612501.609999998,"INVOICING":18266050.65,"DSO_":59.77528830590394,"CIDS_":71.00734333133741,"Past Due":10488111.3,"Current ":18222884.12,"  1-30":5432960.11," 31-90":2801035.9600000004,">90":2255798.3500000006,"Average DSO":62.391979469551536,"Average CIDS":80.44068996561138,"Nb queries":956,"Amount queries":993926.4499999998,"WIP":7473184.813219903},{"YEAR":25,"MONTH":1,"P Line":"AFC","KPI":"LY","Revenue":65604.5,"Billing":65604.5,"TOTAL AR":179499.93,"COLLECTION":104546.81,"INVOICING":79846.42,"DSO_":63.036709503551485,"CIDS_":63.036709503551485,"Past Due":109214.05,"Current ":70285.87999999999,"  1-30":56902.32," 31-90":25171.51,">90":27140.22,"Average DSO":57.702519039698096,"Average CIDS":57.428737519340224,"Nb queries":15,"Amount queries":9212.47,"WIP":0},{"YEAR":25,"MONTH":1,"P Line":"BIC","KPI":"LY","Revenue":1005863.2900000002,"Billing":875747.64,"TOTAL AR":3316803.8600000003,"COLLECTION":1788145.1500000001,"INVOICING":1151178.9,"DSO_":65.23513556483822,"CIDS_":80.9685462496374,"Past Due":1651219.01,"Current ":1665584.8499999999,"  1-30":626988.3099999998," 31-90":417932.2,">90":606298.4999999999,"Average DSO":74.23760483691221,"Average CIDS":89.72548988110894,"Nb queries":282,"Amount queries":321222.7999999999,"WIP":799946.79},{"YEAR":25,"MONTH":1,"P Line":"BIO","KPI":"LY","Revenue":3102393.1399999997,"Billing":2946530.5399999996,"TOTAL AR":9128649.800000003,"COLLECTION":4757772.68,"INVOICING":3713739.67,"DSO_":59.31969862268113,"CIDS_":75.00555268148648,"Past Due":3768354.249999999,"Current ":5350825.659999996,"  1-30":1791573.36," 31-90":1087430.2000000002,">90":898820.5800000005,"Average DSO":61.446143348399225,"Average CIDS":81.902791262549,"Nb queries":599,"Amount queries":371381.63000000006,"WIP":2413880.58},{"YEAR":25,"MONTH":1,"P Line":"CER","KPI":"LY","Revenue":2546251.710000001,"Billing":2570114.75,"TOTAL AR":6467796.510000002,"COLLECTION":4689677.28,"INVOICING":3255204.9499999997,"DSO_":46.53525127649439,"CIDS_":50.3600309563011,"Past Due":3032013.1000000006,"Current ":3428513.0399999996,"  1-30":1518780.67," 31-90":977806.63,">90":542696.17,"Average DSO":55.499903159043235,"Average CIDS":61.44567550534044,"Nb queries":125,"Amount queries":193087.91999999995,"WIP":531594.78},{"YEAR":25,"MONTH":1,"P Line":"IDP","KPI":"LY","Revenue":0,"Billing":0,"TOTAL AR":9037319.91,"COLLECTION":3433000,"INVOICING":2844465.9499999997,"DSO_":79.39254809402843,"CIDS_":101.73983244141527,"Past Due":2596591.51,"Current ":0,"  1-30":0," 31-90":0,">90":0,"Average CIDS":54.474137391104,"Nb queries":0,"Amount queries":0,"WIP":2543810},{"YEAR":25,"MONTH":1,"P Line":"IND","KPI":"LY","Revenue":1661281.81,"Billing":1529760.1199999999,"TOTAL AR":5618994.050000002,"COLLECTION":2741027.8900000006,"INVOICING":1878282.2799999998,"DSO_":65.22399081789277,"CIDS_":89.80455893104924,"Past Due":1542142.93,"Current ":4076627.2699999996,"  1-30":942539.93," 31-90":345890.82,">90":253936.03000000003,"Average DSO":69.20025544058734,"Average CIDS":103.73553846232473,"Nb queries":78,"Amount queries":136039.4,"WIP":2117596.0600000005},{"YEAR":25,"MONTH":1,"P Line":"Total","KPI":"LY","Revenue":8381394.450000001,"Billing":7987757.55,"TOTAL AR":33749064.06000001,"COLLECTION":17514169.810000002,"INVOICING":12922718.169999998,"DSO_":61.74956010817729,"CIDS_":77.1312590776543,"Past Due":12699534.85,"Current ":14591836.699999996,"  1-30":4936784.59," 31-90":2854231.36,">90":2328891.5,"Average DSO":62.658402202397816,"Average CIDS":80.61231202242405,"Nb queries":1099,"Amount queries":1030944.2199999999,"WIP":8406828.209999999},{"YEAR":25,"MONTH":2,"P Line":"AFC","KPI":"OTROS","Revenue":55538.869999999995,"Billing":55538.869999999995,"TOTAL AR":166789.81999999998,"COLLECTION":80782.52,"INVOICING":68456.31999999998,"DSO_":61.57011404742755,"CIDS_":61.57011404742755,"Past Due":109861.42,"Current ":56927,"  1-30":38628," 31-90":45819,">90":25785,"Average DSO":58.345456999442895,"Average CIDS":58.07167547908503,"Nb queries":15,"Amount queries":10299.119999999999,"WIP":0},{"YEAR":25,"MONTH":2,"P Line":"BIC","KPI":"OTROS","Revenue":1070775.8800000001,"Billing":1207618.92,"TOTAL AR":3643898.9000000004,"COLLECTION":1164433.09,"INVOICING":1494722.55,"DSO_":73.2054348574483,"CIDS_":88.38876836396369,"Past Due":1564035.4100000001,"Current ":2079864,"  1-30":501923," 31-90":483778,">90":578334,"Average DSO":74.56759099394833,"Average CIDS":90.64080177190351,"Nb queries":239,"Amount queries":279102.67999999993,"WIP":755770.83},{"YEAR":25,"MONTH":2,"P Line":"BIO","KPI":"OTROS","Revenue":3679038.4100000034,"Billing":3454314.3500000015,"TOTAL AR":8618591.71,"COLLECTION":4841081.77,"INVOICING":4428755.609999999,"DSO_":57.41980522124826,"CIDS_":75.02593371979155,"Past Due":3108344.309999999,"Current ":5506898,"  1-30":1369034," 31-90":913252,">90":922495,"Average DSO":61.357117283463424,"Average CIDS":81.26409938366115,"Nb queries":662,"Amount queries":377855.63999999996,"WIP":2642642.7699999996},{"YEAR":25,"MONTH":2,"P Line":"CER","KPI":"OTROS","Revenue":3275082.25,"Billing":3136642.12,"TOTAL AR":6699848.659999998,"COLLECTION":3662680.020000001,"INVOICING":3936373.7900000005,"DSO_":52.28081221753221,"CIDS_":57.50928394675797,"Past Due":2159818.6,"Current ":4539005,"  1-30":934258," 31-90":666525,">90":592407,"Average DSO":55.41220960277848,"Average CIDS":61.54067435634442,"Nb queries":129,"Amount queries":172400.22,"WIP":670034.9099999999},{"YEAR":25,"MONTH":2,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":8347553.94,"COLLECTION":3096181,"INVOICING":2435000,"DSO_":83.2719856572822,"CIDS_":117.46120171802261,"Past Due":2931340,"Current ":0,"  1-30":0," 31-90":0,">90":0,"Average CIDS":60.456956196921034,"Nb queries":0,"Amount queries":0,"WIP":3427278.9699999997},{"YEAR":25,"MONTH":2,"P Line":"IND","KPI":"OTROS","Revenue":1915562.2500000002,"Billing":1299410.7199999997,"TOTAL AR":4364780.220000001,"COLLECTION":2969587.239999999,"INVOICING":1756035.6400000004,"DSO_":55.82086121285359,"CIDS_":89.22084272915764,"Past Due":1130640.1699999997,"Current ":3234142,"  1-30":693040," 31-90":263975,">90":184546,"Average DSO":68.83166711841038,"Average CIDS":103.23930568478289,"Nb queries":68,"Amount queries":115254.3,"WIP":2611632.56},{"YEAR":25,"MONTH":2,"P Line":"Total","KPI":"OTROS","Revenue":9995997.660000004,"Billing":9153524.98,"TOTAL AR":31841463.25,"COLLECTION":15814745.639999999,"INVOICING":14119343.91,"DSO_":62.535837497259614,"CIDS_":82.38643984003153,"Past Due":11004039.909999998,"Current ":15416836,"  1-30":3536883," 31-90":2373349,">90":2303567,"Average DSO":62.994097061135825,"Average CIDS":81.05971268033922,"Nb queries":1113,"Amount queries":954911.96,"WIP":10107360.04},{"YEAR":25,"MONTH":3,"P Line":"AFC","KPI":"OTROS","Revenue":51731.96000000001,"Billing":51731.96000000001,"TOTAL AR":162329.33999999997,"COLLECTION":65889.87,"INVOICING":63715.829999999994,"DSO_":68.52099354789326,"CIDS_":68.52099354789326,"Past Due":118430.28,"Current ":43899.06,"  1-30":33446.490000000005," 31-90":43963.479999999996,">90":41389.31,"Average DSO":59.7257011481557,"Average CIDS":59.45191962779783,"Nb queries":14,"Amount queries":9902.74,"WIP":0},{"YEAR":25,"MONTH":3,"P Line":"BIC","KPI":"OTROS","Revenue":1121880.2499999995,"Billing":1189861.8099999998,"TOTAL AR":3720493.849999999,"COLLECTION":1396485.07,"INVOICING":1533089.8,"DSO_":77.83809086852506,"CIDS_":94.2016403511247,"Past Due":1679121.43,"Current ":2041372.42,"  1-30":662913.75," 31-90":368464.88000000006,">90":647742.8,"Average DSO":75.03369192675231,"Average CIDS":91.51009107758631,"Nb queries":198,"Amount queries":234026.15,"WIP":782142.58},{"YEAR":25,"MONTH":3,"P Line":"BIO","KPI":"OTROS","Revenue":3849796.3700000034,"Billing":3591851.4699999997,"TOTAL AR":8832529.810000004,"COLLECTION":4435079.529999999,"INVOICING":4646120.5200000005,"DSO_":62.15900886630752,"CIDS_":82.58917131594497,"Past Due":3412144.3000000003,"Current ":5420144.570000002,"  1-30":1603425.4899999993," 31-90":873304.3399999999,">90":1018805.0900000004,"Average DSO":61.368210233374434,"Average CIDS":81.11607920844823,"Nb queries":649,"Amount queries":367222.37999999995,"WIP":2903038.87},{"YEAR":25,"MONTH":3,"P Line":"CER","KPI":"OTROS","Revenue":3640633.6699999995,"Billing":3504849.5899999994,"TOTAL AR":7055659.919999999,"COLLECTION":4111094.3,"INVOICING":4469119.5,"DSO_":54.4572357272492,"CIDS_":60.61653319141203,"Past Due":2538375.4800000004,"Current ":4518515.009999999,"  1-30":1429089.75," 31-90":528032.0599999999,">90":609320.4500000001,"Average DSO":55.26359797048124,"Average CIDS":61.331411131633416,"Nb queries":106,"Amount queries":217633.76,"WIP":798018.99},{"YEAR":25,"MONTH":3,"P Line":"IDP","KPI":"OTROS","Revenue":0,"Billing":0,"TOTAL AR":8586000,"COLLECTION":2798272,"INVOICING":2986000,"DSO_":93.49546279491832,"CIDS_":134.04765484573502,"Past Due":3305400,"Current ":0,"  1-30":0," 31-90":0,">90":0,"Average CIDS":67.0096584876887,"Nb queries":0,"Amount queries":0,"WIP":3724042.9699999997},{"YEAR":25,"MONTH":3,"P Line":"IND","KPI":"OTROS","Revenue":1922707.4999999998,"Billing":1561980.5800000003,"TOTAL AR":4318413.47,"COLLECTION":1960821.4100000001,"INVOICING":1911949.6500000004,"DSO_":70.07545297710907,"CIDS_":118.30831405416669,"Past Due":1133077.4999999998,"Current ":3185335.9699999997,"  1-30":596562.5700000001," 31-90":350928.8499999999,">90":192753.19,"Average DSO":68.89497506384623,"Average CIDS":104.21425537011828,"Nb queries":55,"Amount queries":76902.20000000001,"WIP":2972359.4799999995},{"YEAR":25,"MONTH":3,"P Line":"Total","KPI":"OTROS","Revenue":10586749.750000002,"Billing":9900275.409999998,"TOTAL AR":32675426.39,"COLLECTION":14767642.18,"INVOICING":15609995.3,"DSO_":68.7491978628513,"CIDS_":92.2711168101105,"Past Due":12186548.99,"Current ":15209267.030000001,"  1-30":4325438.05," 31-90":2164693.61,">90":2510010.840000001,"Average DSO":63.50118097291568,"Average CIDS":81.90738980617675,"Nb queries":1022,"Amount queries":905687.23,"WIP":11179602.889999999},{"YEAR":25,"MONTH":4,"P Line":"AFC","KPI":"OTROS","Revenue":55113.84,"Billing":55113.84,"TOTAL AR":158051.80000000002,"COLLECTION":71829.63,"INVOICING":67570.78,"DSO_":72.03342349245784,"CIDS_":72.03342349245784,"Past Due":101388.93999999999,"Current ":56055.420000000006,"  1-30":29050.7," 31-90":28806.94,">90":43146.649999999994,"Average DSO":60.92660801504781,"Average CIDS":60.65282649468994,"Nb queries":14,"Amount queries":11344.660000000002,"WIP":0},{"YEAR":25,"MONTH":4,"P Line":"BIC","KPI":"OTROS","Revenue":1181494.47,"Billing":1035416.7100000001,"TOTAL AR":3499112.6300000004,"COLLECTION":1489050.7399999998,"INVOICING":1267670.08,"DSO_":74.34335050765024,"CIDS_":93.65484006871239,"Past Due":1693082.0200000003,"Current ":1806030.6100000003,"  1-30":694744.3," 31-90":430009.33,">90":568328.39,"Average DSO":75.27213209493301,"Average CIDS":92.20657287841304,"Nb queries":184,"Amount queries":217704.44999999998,"WIP":908932.36},{"YEAR":25,"MONTH":4,"P Line":"BIO","KPI":"OTROS","Revenue":3610758.4000000004,"Billing":3234660.7900000005,"TOTAL AR":8555637.989999998,"COLLECTION":4387722.989999999,"INVOICING":4111153.5899999994,"DSO_":58.39569873955964,"CIDS_":80.80914584045091,"Past Due":3304169.5500000003,"Current ":5240688.209999997,"  1-30":1478168.3699999987," 31-90":864503.3199999997,">90":1041315.4500000004,"Average DSO":61.14888557733634,"Average CIDS":81.03623420322953,"Nb queries":663,"Amount queries":402041.66,"WIP":3283826.4399999995},{"YEAR":25,"MONTH":4,"P Line":"CER","KPI":"OTROS","Revenue":3342195.0599999987,"Billing":3174049.01,"TOTAL AR":6930619.6499999985,"COLLECTION":4134655.9000000004,"INVOICING":4014814.12,"DSO_":50.220638500283286,"CIDS_":57.27818149872989,"Past Due":2239234.4,"Current ":4691385.250000001,"  1-30":1065333.3," 31-90":617556.6400000001,">90":585641.8100000002,"Average DSO":54.801048117876604,"Average CIDS":61.04839251950589,"Nb queries":122,"Amount queries":164873.25,"WIP":973965.0399999998},{"YEAR":25,"MONTH":4,"P Line":"IDP","KPI":"OTROS","Revenue":2678965.05,"Billing":2910050,"TOTAL AR":7584100,"COLLECTION":2457663,"INVOICING":3478000,"DSO_":76.70176424317339,"CIDS_":111.9153957410945,"Past Due":3247200,"Current ":0,"  1-30":0," 31-90":0,">90":0,"Average CIDS":71.7969194672142,"Nb queries":0,"Amount queries":0,"WIP":3481845.63},{"YEAR":25,"MONTH":4,"P Line":"IND","KPI":"OTROS","Revenue":1974025.46,"Billing":1867609,"TOTAL AR":4892415.170000002,"COLLECTION":1700639.4199999997,"INVOICING":2274641.09,"DSO_":74.09474147355031,"CIDS_":120.72224535509166,"Past Due":1376778.4200000002,"Current ":3512551.1799999997,"  1-30":798980.25," 31-90":350796.26999999996,">90":234169.00999999998,"Average DSO":68.82835075600595,"Average CIDS":105.45537646743982,"Nb queries":62,"Amount queries":187204.27,"WIP":3078775.9399999995},{"YEAR":25,"MONTH":4,"P Line":"Total","KPI":"OTROS","Revenue":12842552.280000001,"Billing":12276899.350000001,"TOTAL AR":31619937.24,"COLLECTION":14241561.68,"INVOICING":15213849.66,"DSO_":63.40690304347011,"CIDS_":86.92354217292697,"Past Due":11961853.33,"Current ":15306710.669999998,"  1-30":4066276.919999999," 31-90":2291672.5,">90":2472601.3100000005,"Average DSO":63.545671224174725,"Average CIDS":82.50291873627275,"Nb queries":1045,"Amount queries":983168.29,"WIP":11727345.410000004},{"YEAR":25,"MONTH":5,"P Line":"AFC","KPI":"OTROS","Revenue":53972.28999999999,"Billing":53972.28999999999,"TOTAL AR":138947.45,"COLLECTION":85286.70999999998,"INVOICING":66189.56,"DSO_":64.06181162577113,"CIDS_":64.06181162577113,"Past Due":92751.87000000001,"Current ":46195.58,"  1-30":39393.66," 31-90":20986.28,">90":32740.929999999993,"Average DSO":61.84150988932055,"Average CIDS":61.56772836896267,"Nb queries":13,"Amount queries":5395.04,"WIP":0},{"YEAR":25,"MONTH":5,"P Line":"BIC","KPI":"OTROS","Revenue":1147463.3200000003,"Billing":1136514.2999999998,"TOTAL AR":3460775.9800000004,"COLLECTION":1507213.0099999998,"INVOICING":1468586.12,"DSO_":73.98532928140779,"CIDS_":93.65078211408024,"Past Due":1608476.8599999999,"Current ":1852299.1200000003,"  1-30":579489.3400000001," 31-90":505919.8,">90":523067.72,"Average DSO":75.41067279396987,"Average CIDS":92.80033896494452,"Nb queries":188,"Amount queries":239924.56,"WIP":919881.3799999999},{"YEAR":25,"MONTH":5,"P Line":"BIO","KPI":"OTROS","Revenue":3890246.5600000042,"Billing":3844503.4800000014,"TOTAL AR":8779471.859999996,"COLLECTION":4593328.220000002,"INVOICING":4816171.11,"DSO_":58.21311056943285,"CIDS_":80.27100244192829,"Past Due":3282162.709999999,"Current ":5497309.150000001,"  1-30":1420272.3599999999," 31-90":902734.7500000001,">90":1038111.0700000005,"Average DSO":60.95382729715157,"Average CIDS":80.97783041841947,"Nb queries":720,"Amount queries":429919.98999999993,"WIP":3326684.3},{"YEAR":25,"MONTH":5,"P Line":"CER","KPI":"OTROS","Revenue":4048435.230000001,"Billing":3952266.9299999992,"TOTAL AR":7707363.839999998,"COLLECTION":4200251.6899999995,"INVOICING":4980762.55,"DSO_":51.51714801745873,"CIDS_":58.6700758952216,"Past Due":2549586.57,"Current ":5157777.2700000005,"  1-30":1328476.49," 31-90":704487.4500000001,">90":545919.98,"Average DSO":54.366776139591444,"Average CIDS":60.6269138287818,"Nb queries":145,"Amount queries":227607.00999999998,"WIP":1070133.3399999999},{"YEAR":25,"MONTH":5,"P Line":"IDP","KPI":"OTROS","Revenue":2868744.8200000003,"Billing":2551917,"TOTAL AR":9338035.559999999,"COLLECTION":1885866.9699999997,"INVOICING":2827359.8599999994,"DSO_":90.45212036378925,"CIDS_":127.39956441639751,"Past Due":2871498.9400000004,"Current ":0,"  1-30":0," 31-90":0,">90":0,"Average CIDS":77.8262926550701,"Nb queries":0,"Amount queries":0,"WIP":3814355.54},{"YEAR":25,"MONTH":5,"P Line":"IND","KPI":"OTROS","Revenue":2164980.42,"Billing":1849343.4599999995,"TOTAL AR":4571294.54,"COLLECTION":2554107.5400000005,"INVOICING":2233354.45,"DSO_":64.08411542840602,"CIDS_":111.66974925528922,"Past Due":1175907.16,"Current ":3395387.3800000013,"  1-30":473850.07999999996," 31-90":439404.91,">90":269819.27999999997,"Average DSO":68.45405040401673,"Average CIDS":106.60250736450324,"Nb queries":79,"Amount queries":153702.02000000002,"WIP":3394412.9000000004},{"YEAR":25,"MONTH":5,"P Line":"Total","KPI":"OTROS","Revenue":14173842.640000006,"Billing":13388517.459999999,"TOTAL AR":33995889.23,"COLLECTION":14826054.140000002,"INVOICING":16392423.649999999,"DSO_":64.88516438425383,"CIDS_":88.79149640084754,"Past Due":11580384.11,"Current ":15948968.500000002,"  1-30":3841481.9299999997," 31-90":2573533.1900000004,">90":2409658.98,"Average DSO":63.7909251381148,"Average CIDS":83.31175307551918,"Nb queries":1145,"Amount queries":1056548.62,"WIP":12525467.459999997},{"YEAR":25,"MONTH":6,"P Line":"AFC","KPI":"OTROS","Revenue":41913.64,"Billing":41913.64,"TOTAL AR":134137.66,"COLLECTION":54769.28,"INVOICING":49959.48999999999,"DSO_":65.71086746596707,"CIDS_":65.71086746596707,"Past Due":84542.92,"Current ":49594.74,"  1-30":25720.53," 31-90":23607.479999999996,">90":35583.91,"Average DSO":62.726440150898185,"Average CIDS":62.726440150898185,"Nb queries":12,"Amount queries":5013.9400000000005,"WIP":0},{"YEAR":25,"MONTH":6,"P Line":"BIC","KPI":"OTROS","Revenue":1098528.2899999998,"Billing":1018643.3400000001,"TOTAL AR":3509512.5600000005,"COLLECTION":1219363.35,"INVOICING":1268100.04,"DSO_":78.87812958419505,"CIDS_":101.34840053591238,"Past Due":1794052.7300000002,"Current ":1715459.8299999998,"  1-30":683869.5800000001," 31-90":629798.3900000001,">90":480384.76,"Average DSO":75.79793142164327,"Average CIDS":93.66282573357829,"Nb queries":221,"Amount queries":378793.82999999996,"WIP":999766.3299999998},{"YEAR":25,"MONTH":6,"P Line":"BIO","KPI":"OTROS","Revenue":3904368.4800000032,"Billing":3586660.590000001,"TOTAL AR":9025924.080000002,"COLLECTION":4324085.24,"INVOICING":4570178.590000001,"DSO_":60.183957710300355,"CIDS_":84.50205280149999,"Past Due":3494810.6,"Current ":5530875.479999996,"  1-30":1611348.2299999995," 31-90":1011945.4500000004,">90":950012.5800000004,"Average DSO":60.82487052814551,"Average CIDS":81.09355630792061,"Nb queries":742,"Amount queries":462510.78000000014,"WIP":3647039.6499999994},{"YEAR":25,"MONTH":6,"P Line":"CER","KPI":"OTROS","Revenue":4172394.200000001,"Billing":3756658.16,"TOTAL AR":8488604.68,"COLLECTION":3980242.9299999997,"INVOICING":4762871.000000001,"DSO_":55.52766122488002,"CIDS_":65.24738015011833,"Past Due":2979346.9499999997,"Current ":5509257.7299999995,"  1-30":1680644.1699999997," 31-90":747916.1399999999,">90":580206.99,"Average DSO":54.23989755186233,"Average CIDS":60.73719990913616,"Nb queries":99,"Amount queries":148111.22999999998,"WIP":1485869.3800000001},{"YEAR":25,"MONTH":6,"P Line":"IDP","KPI":"OTROS","Revenue":3345950,"Billing":2584625,"TOTAL AR":9024550.530000001,"COLLECTION":5496130.45,"INVOICING":3101550,"DSO_":86.34180190815607,"CIDS_":130.5533267116902,"Past Due":3055539.940000002,"Current ":5830617.42,"  1-30":899461.1799999997," 31-90":515292.68,">90":1598122.5299999998,"Average CIDS":85.3809236083447,"Nb queries":0,"Amount queries":0,"WIP":4621042.539999999},{"YEAR":25,"MONTH":6,"P Line":"IND","KPI":"OTROS","Revenue":2177869.87,"Billing":1816712.48,"TOTAL AR":4339697.55,"COLLECTION":2445022.42,"INVOICING":2213473.81,"DSO_":58.10824377262094,"CIDS_":108.3950647785071,"Past Due":1263192.9300000002,"Current ":3076504.619999999,"  1-30":718595.2599999999," 31-90":257614.36000000002,">90":294197.94,"Average DSO":67.4961278748825,"Average CIDS":107.11510261319306,"Nb queries":69,"Amount queries":146675.71999999997,"WIP":3755570.2899999986},{"YEAR":25,"MONTH":6,"P Line":"Total","KPI":"OTROS","Revenue":14741024.480000004,"Billing":12805213.21,"TOTAL AR":34522427.06,"COLLECTION":17519613.67,"INVOICING":15966132.930000002,"DSO_":65.31135759089574,"CIDS_":92.76079814498785,"Past Due":12671486.07,"Current ":21712309.819999993,"  1-30":5619638.949999999," 31-90":3186174.5000000005,">90":3938508.7100000004,"Average DSO":64.01229014989673,"Average CIDS":84.34822647042249,"Nb queries":1143,"Amount queries":1141105.5,"WIP":14509288.189999996},{"YEAR":25,"MONTH":7,"P Line":"AFC","KPI":"OTROS","Revenue":59571.16,"Billing":0,"TOTAL AR":120685.02000000002,"COLLECTION":86503.5,"INVOICING":73050.86,"DSO_":57.40833491939823,"CIDS_":57.40833491939823,"Past Due":63300.770000000004,"Current ":57384.250000000015,"  1-30":29457.140000000003," 31-90":17168.5,">90":17044.13,"Average DSO":63.839913437061035,"Average CIDS":63.839913437061035,"Nb queries":13,"Amount queries":5403.94,"WIP":0},{"YEAR":25,"MONTH":7,"P Line":"BIC","KPI":"OTROS","Revenue":1283541.86,"Billing":1185105.6400000001,"TOTAL AR":3614720.7,"COLLECTION":1527650.8,"INVOICING":1647331.3299999996,"DSO_":74.20701759107261,"CIDS_":96.75214423015453,"Past Due":1707470.2000000002,"Current ":1907250.5000000002,"  1-30":653548.0900000001," 31-90":451480.74,">90":602885.44,"Average DSO":75.70360458449701,"Average CIDS":94.2930527955614,"Nb queries":195,"Amount queries":341494.27,"WIP":1098202.5499999998},{"YEAR":25,"MONTH":7,"P Line":"BIO","KPI":"OTROS","Revenue":3483163.1700000013,"Billing":4076363.8900000034,"TOTAL AR":9763493.540000003,"COLLECTION":4502075.91,"INVOICING":5243242.75,"DSO_":60.06417619651462,"CIDS_":79.03212676987457,"Past Due":3479495.769999999,"Current ":6132967.69,"  1-30":1470391.9399999988," 31-90":963508.5400000004,">90":977356.1200000006,"Average DSO":60.851533477570456,"Average CIDS":80.8973534736882,"Nb queries":792,"Amount queries":484586.3700000001,"WIP":3083259.8500000006},{"YEAR":25,"MONTH":7,"P Line":"CER","KPI":"OTROS","Revenue":3306829.8299999987,"Billing":3873699.1799999992,"TOTAL AR":8390356.91,"COLLECTION":5075753.699999999,"INVOICING":5005583.649999999,"DSO_":51.19811523963454,"CIDS_":59.96298248967409,"Past Due":3108402.480000001,"Current ":4712450.09,"  1-30":1631036.72," 31-90":579756.11,">90":460003.17000000004,"Average DSO":53.89816790824478,"Average CIDS":60.599504211890945,"Nb queries":73,"Amount queries":168340.62999999998,"WIP":1436388.1199999999},{"YEAR":25,"MONTH":7,"P Line":"IDP","KPI":"OTROS","Revenue":2554891.42,"Billing":3091366,"TOTAL AR":9872738.750000002,"COLLECTION":3827390,"INVOICING":3717452.6899999995,"DSO_":92.15589280644294,"CIDS_":127.66262803697768,"Past Due":3385905.500000001,"Current ":0,"  1-30":0," 31-90":0,">90":0,"Average CIDS":92.58221288523013,"Nb queries":0,"Amount queries":0,"WIP":3803866.5799999996},{"YEAR":25,"MONTH":7,"P Line":"IND","KPI":"OTROS","Revenue":2264291.29,"Billing":2257615.9800000004,"TOTAL AR":4988004.870000001,"COLLECTION":2090180.6899999992,"INVOICING":2739534.11,"DSO_":62.46838319398583,"CIDS_":109.58569882136352,"Past Due":1259273.0299999998,"Current ":3728731.840000001,"  1-30":657934.8500000001," 31-90":367361.98,">90":235872.88,"Average DSO":67.26038510268022,"Average CIDS":107.78097611881564,"Nb queries":70,"Amount queries":114982.72999999998,"WIP":3762245.5999999996},{"YEAR":25,"MONTH":7,"P Line":"Total","KPI":"OTROS","Revenue":12952288.73,"Billing":14484150.690000003,"TOTAL AR":36749999.79000001,"COLLECTION":17109554.599999998,"INVOICING":18426195.39,"DSO_":65.13369827129286,"CIDS_":88.50023577955824,"Past Due":13003847.750000002,"Current ":16538784.370000001,"  1-30":4442368.739999998," 31-90":2379275.87,">90":2293161.74,"Average DSO":64.3885791526386,"Average CIDS":85.19120492664926,"Nb queries":1143,"Amount queries":1114807.94,"WIP":13183962.699999997},{"YEAR":25,"MONTH":8,"P Line":"AFC","KPI":"OTROS","Revenue":42251.46,"Billing":0,"TOTAL AR":136720.71000000002,"COLLECTION":35394.5,"INVOICING":51430.189999999995,"DSO_":70.53901518534626,"CIDS_":70.53901518534626,"Past Due":89115.19000000002,"Current ":47605.52,"  1-30":45519.66000000001," 31-90":22336.21,">90":21628.319999999996,"Average DSO":65.08500340144307,"Average CIDS":65.08500340144307,"Nb queries":12,"Amount queries":3954.29,"WIP":0},{"YEAR":25,"MONTH":8,"P Line":"BIC","KPI":"OTROS","Revenue":813063.3300000002,"Billing":762936.3,"TOTAL AR":7308330.069999999,"COLLECTION":1067302.45,"INVOICING":4760911.56,"DSO_":85.68529471624322,"CIDS_":99.06008048809252,"Past Due":2037380.68,"Current ":5270949.39,"  1-30":703723.1499999998," 31-90":617921.14,">90":715736.39,"Average DSO":76.28516883793465,"Average CIDS":94.39966818422285,"Nb queries":190,"Amount queries":307915.0400000001,"WIP":1140771.58},{"YEAR":25,"MONTH":8,"P Line":"BIO","KPI":"OTROS","Revenue":2716984.8200000003,"Billing":2495999.1800000006,"TOTAL AR":9385355.9,"COLLECTION":3551374.1,"INVOICING":3164776.1600000006,"DSO_":65.08469539009559,"CIDS_":87.99867047022516,"Past Due":4428087.4399999995,"Current ":4956840.8199999975,"  1-30":2023664.659999998," 31-90":1323629.32,">90":1142889.4000000001,"Average DSO":60.971402200106375,"Average CIDS":80.98297175581286,"Nb queries":781,"Amount queries":500218.4200000001,"WIP":3304245.49},{"YEAR":25,"MONTH":8,"P Line":"CER","KPI":"OTROS","Revenue":975131.6399999999,"Billing":1705560.12,"TOTAL AR":7004295.45,"COLLECTION":3582402.9800000004,"INVOICING":2198692.8400000012,"DSO_":52.67642861649062,"CIDS_":59.3758244388446,"Past Due":4315479.96,"Current ":2245750.0199999996,"  1-30":2303086.9499999997," 31-90":984906.37,">90":483516.48999999993,"Average DSO":53.887701791125785,"Average CIDS":60.63700862593219,"Nb queries":72,"Amount queries":156542.12,"WIP":890807.31},{"YEAR":25,"MONTH":8,"P Line":"IDP","KPI":"OTROS","Revenue":2879607.03,"Billing":877908,"TOTAL AR":8694152.02,"COLLECTION":7055093.76,"INVOICING":1639058.26,"DSO_":92.56237527221839,"CIDS_":137.758449542522,"Past Due":4194178.31,"Current ":0,"  1-30":0," 31-90":0,">90":0,"Average CIDS":100.35346533241443,"Nb queries":0,"Amount queries":0,"WIP":4245154.029999999},{"YEAR":25,"MONTH":8,"P Line":"IND","KPI":"OTROS","Revenue":1444142.85,"Billing":1585499.95,"TOTAL AR":5484014.339999998,"COLLECTION":1426879.51,"INVOICING":1922888.9500000002,"DSO_":71.78136902451824,"CIDS_":119.2748365930625,"Past Due":1803351.3499999999,"Current ":3680662.9899999998,"  1-30":1114567.47," 31-90":430020.7200000001,">90":260659.83999999997,"Average DSO":67.04922312999092,"Average CIDS":107.63510389396669,"Nb queries":74,"Amount queries":250279.96000000002,"WIP":3628446.4999999995},{"YEAR":25,"MONTH":8,"P Line":"Total","KPI":"OTROS","Revenue":8871181.129999999,"Billing":7427903.550000001,"TOTAL AR":38012868.489999995,"COLLECTION":16718447.299999999,"INVOICING":13737757.96,"DSO_":71.0882624399197,"CIDS_":95.79134594779873,"Past Due":16867592.93,"Current ":16201808.739999996,"  1-30":6190561.889999998," 31-90":3378813.7600000002,">90":2624430.44,"Average DSO":65.02929562617979,"Average CIDS":86.14218194118764,"Nb queries":1129,"Amount queries":1218909.8300000003,"WIP":13209424.910000004},{"YEAR":25,"MONTH":9,"P Line":"AFC","KPI":"OTROS","Revenue":53085.09,"Billing":0,"TOTAL AR":101909.99,"COLLECTION":95949.76999999999,"INVOICING":63209.14,"DSO_":48.867226891293576,"CIDS_":48.867226891293576,"Past Due":54234.8,"Current ":47675.19,"  1-30":22836.17," 31-90":19321.800000000003,">90":12445.830000000002,"Average DSO":64.01581634848772,"Average CIDS":64.01581634848772,"Nb queries":7,"Amount queries":7374.39,"WIP":0},{"YEAR":25,"MONTH":9,"P Line":"BIC","KPI":"OTROS","Revenue":1181883.5600000003,"Billing":1007975.8699999999,"TOTAL AR":3243018.83,"COLLECTION":5321748.369999999,"INVOICING":1294039.7700000003,"DSO_":37.89418119069653,"CIDS_":53.27029883372263,"Past Due":1633678.4,"Current ":1609340.4299999997,"  1-30":591708.3700000002," 31-90":563282.6799999999,">90":478687.35,"Average DSO":72.82719534328004,"Average CIDS":90.48637619560343,"Nb queries":177,"Amount queries":253012.1,"WIP":1315902.27},{"YEAR":25,"MONTH":9,"P Line":"BIO","KPI":"OTROS","Revenue":3549935.6100000013,"Billing":3340789.780000001,"TOTAL AR":8931645.79,"COLLECTION":4596295.250000002,"INVOICING":4172893.3499999996,"DSO_":63.8942633481175,"CIDS_":89.02799071742355,"Past Due":3730080.84,"Current ":5201564.949999996,"  1-30":1337814.2999999996," 31-90":1227758.8800000001,">90":1214405.0100000007,"Average DSO":60.90982234135176,"Average CIDS":81.04406173075334,"Nb queries":648,"Amount queries":420337.0300000001,"WIP":3513391.3200000003},{"YEAR":25,"MONTH":9,"P Line":"CER","KPI":"OTROS","Revenue":3525128.83,"Billing":3349687.9999999986,"TOTAL AR":7158483.01,"COLLECTION":4126446.5,"INVOICING":4291340.2700000005,"DSO_":56.04427186036427,"CIDS_":63.92349481038195,"Past Due":2724127.3599999994,"Current ":4434215.659999999,"  1-30":1016940.0800000002," 31-90":1171972.85,">90":553035.1399999999,"Average DSO":53.64253458403628,"Average CIDS":60.385350225256,"Nb queries":64,"Amount queries":124415.76000000001,"WIP":1006405.8599999999},{"YEAR":25,"MONTH":9,"P Line":"IDP","KPI":"OTROS","Revenue":-295737.45,"Billing":0,"TOTAL AR":8697084.550000003,"COLLECTION":3969109.299999999,"INVOICING":2793455.0999999996,"DSO_":96.04182455459436,"CIDS_":146.17137046846966,"Past Due":3976550.93,"Current ":0,"  1-30":0," 31-90":0,">90":0,"Average CIDS":107.27938850597722,"Nb queries":0,"Amount queries":0,"WIP":4539489.97},{"YEAR":25,"MONTH":9,"P Line":"IND","KPI":"OTROS","Revenue":1871202.1300000004,"Billing":1524152.43,"TOTAL AR":4419318.169999999,"COLLECTION":2895455.520000001,"INVOICING":1841627.4700000004,"DSO_":61.15245160925893,"CIDS_":116.14657970684615,"Past Due":1637227.58,"Current ":2782090.5900000003,"  1-30":859359.6699999999," 31-90":517766.0999999999,">90":261998.49,"Average DSO":66.3014892355545,"Average CIDS":107.79231095256391,"Nb queries":84,"Amount queries":172999.8,"WIP":3974273.2},{"YEAR":25,"MONTH":9,"P Line":"Total","KPI":"OTROS","Revenue":9885497.770000001,"Billing":9222606.08,"TOTAL AR":32551460.34,"COLLECTION":21005004.709999997,"INVOICING":14456565.100000001,"DSO_":62.83995819870594,"CIDS_":90.54131542803552,"Past Due":13755899.91,"Current ":14074886.819999997,"  1-30":3828658.59," 31-90":3500102.31,">90":2520571.8200000003,"Average DSO":64.8061358334087,"Average CIDS":86.37480481425557,"Nb queries":980,"Amount queries":978139.0800000001,"WIP":14349462.62},{"YEAR":25,"MONTH":10,"P Line":"AFC","KPI":"OTROS","Revenue":0,"Billing":77952.79,"TOTAL AR":136444.00000000003,"COLLECTION":61809.170000000006,"INVOICING":96015.07,"DSO_":58.294343721279986,"CIDS_":58.294343721279986,"Past Due":42992.719999999994,"Current ":0,"  1-30":0," 31-90":0,">90":0,"Average DSO":63.73906780442223,"Average CIDS":63.73906780442223,"Nb queries":0,"Amount queries":0,"WIP":0},{"YEAR":25,"MONTH":10,"P Line":"BIC","KPI":"OTROS","Revenue":1241304.35,"Billing":1533583.8099999998,"TOTAL AR":4017771.7600000007,"COLLECTION":1979768.4600000002,"INVOICING":2756720.8299999996,"DSO_":41.03641758728346,"CIDS_":51.541467164615895,"Past Due":1373682.44,"Current ":2644089.3200000008,"  1-30":499848.4199999999," 31-90":350442.64,">90":523391.38000000006,"Average DSO":69.33699479623719,"Average CIDS":85.91524044379064,"Nb queries":218,"Amount queries":334136.41000000003,"WIP":1028522.81},{"YEAR":25,"MONTH":10,"P Line":"BIO","KPI":"OTROS","Revenue":4195065.710000004,"Billing":3838913.9300000058,"TOTAL AR":8917183.720000003,"COLLECTION":4949319.589999999,"INVOICING":4949234.69,"DSO_":65.3172289566643,"CIDS_":93.66113669218647,"Past Due":3113054.98,"Current ":5801741.5100000035,"  1-30":1315243.1399999997," 31-90":748044.01,">90":1100413.7400000002,"Average DSO":60.77405280154587,"Average CIDS":81.56703315612647,"Nb queries":707,"Amount queries":396689.66000000003,"WIP":3869543.0999999996},{"YEAR":25,"MONTH":10,"P Line":"CER","KPI":"OTROS","Revenue":4290139.9399999995,"Billing":4037739.9599999995,"TOTAL AR":7989481.15,"COLLECTION":4343180.140000001,"INVOICING":5181307.529999998,"DSO_":61.6084583321698,"CIDS_":70.71044319206847,"Past Due":2553061.43,"Current ":5436419.720000001,"  1-30":1398055.6099999999," 31-90":635868.54,">90":536818,"Average DSO":53.241593132227145,"Average CIDS":60.06221835644504,"Nb queries":70,"Amount queries":141598.63000000003,"WIP":1180359.62},{"YEAR":25,"MONTH":10,"P Line":"IDP","KPI":"OTROS","Revenue":2944047.359999999,"Billing":3228414.57,"TOTAL AR":9548006.52,"COLLECTION":3783574.71,"INVOICING":4481336.449999999,"DSO_":128.90611506823834,"CIDS_":186.45785524387492,"Past Due":4874383.0600000005,"Current ":1802973.2800000014,"  1-30":1346162.3699999955," 31-90":622393.5599999999,">90":770058.6299999999,"Average CIDS":116.85162650056442,"Nb queries":0,"Amount queries":0,"WIP":4262826.4},{"YEAR":25,"MONTH":10,"P Line":"IND","KPI":"OTROS","Revenue":2316718.88,"Billing":1975788.1800000002,"TOTAL AR":4907057.769999999,"COLLECTION":1924242.3800000001,"INVOICING":2411982.1699999995,"DSO_":71.50251762625268,"CIDS_":134.30951828323816,"Past Due":1461929.5799999998,"Current ":3445128.1900000004,"  1-30":721821.3800000001," 31-90":480154.63,">90":261850.24999999997,"Average DSO":65.68279458499315,"Average CIDS":108.97930911158817,"Nb queries":79,"Amount queries":123166.53,"WIP":4310303.899999999},{"YEAR":25,"MONTH":10,"P Line":"Total","KPI":"OTROS","Revenue":14987276.240000002,"Billing":14692393.240000006,"TOTAL AR":35515944.92,"COLLECTION":17041894.45,"INVOICING":19876596.739999995,"DSO_":69.75563832501511,"CIDS_":98.53225208760469,"Past Due":13419104.21,"Current ":19130352.020000007,"  1-30":5281130.919999995," 31-90":2836903.38,">90":3192532,"Average DSO":64.73156235872669,"Average CIDS":86.96684974163107,"Nb queries":1074,"Amount queries":995591.2300000001,"WIP":14651555.83},{"YEAR":25,"MONTH":11,"P Line":"AFC","KPI":"OTROS","Revenue":75041.03,"Billing":75041.03,"TOTAL AR":141150.27000000002,"COLLECTION":84547.1,"INVOICING":89622.37,"DSO_":51.04962382846492,"CIDS_":51.04962382846492,"Past Due":55854.08,"Current ":85296.18999999999,"  1-30":32610.6," 31-90":9189.670000000002,">90":14422.810000000001,"Average DSO":62.94719389724286,"Average CIDS":62.94719389724286,"Nb queries":12,"Amount queries":19327.35,"WIP":0},{"YEAR":25,"MONTH":11,"P Line":"BIC","KPI":"OTROS","Revenue":1316959.54,"Billing":1194787.2000000002,"TOTAL AR":3916512.8400000003,"COLLECTION":1962247.4599999995,"INVOICING":1511780.06,"DSO_":63.36783443844526,"CIDS_":81.98568729203681,"Past Due":1737620.13,"Current ":2006674.1400000001,"  1-30":680928.3099999999," 31-90":368202.50999999995,">90":511499.37000000005,"Average DSO":68.34662480641906,"Average CIDS":85.05326296700203,"Nb queries":208,"Amount queries":366158.15,"WIP":1150695.1499999997},{"YEAR":25,"MONTH":11,"P Line":"BIO","KPI":"OTROS","Revenue":3991288.7800000045,"Billing":4169296.930000005,"TOTAL AR":9853788.019999998,"COLLECTION":4384094.67,"INVOICING":5321732.33,"DSO_":61.39916193332736,"CIDS_":84.40119442251293,"Past Due":3194974.009999998,"Current ":6646069.059999999,"  1-30":1533834.2599999993," 31-90":755405.2500000001,">90":965867.0000000005,"Average DSO":60.83428671972836,"Average CIDS":81.99017659673973,"Nb queries":734,"Amount queries":529481.1500000001,"WIP":3691534.950000001},{"YEAR":25,"MONTH":11,"P Line":"CER","KPI":"OTROS","Revenue":4178904.189999999,"Billing":4202161.629999999,"TOTAL AR":8984237.850000001,"COLLECTION":4399917.369999999,"INVOICING":5402538.500000002,"DSO_":54.35773308600512,"CIDS_":60.87198491087133,"Past Due":2837130.4999999995,"Current ":6139888.28,"  1-30":1606632.26," 31-90":658272.9700000001,">90":597125.0599999999,"Average DSO":53.043441891413075,"Average CIDS":59.84498625206546,"Nb queries":89,"Amount queries":197258.76000000004,"WIP":1076674.5499999998},{"YEAR":25,"MONTH":11,"P Line":"IDP","KPI":"OTROS","Revenue":2649179.020000001,"Billing":2684936.2900000005,"TOTAL AR":9698735.959999999,"COLLECTION":3259155.96,"INVOICING":3371436.3099999996,"DSO_":140.78037902485076,"CIDS_":202.13720613376347,"Past Due":3731834.99,"Current ":5966900.969999998,"  1-30":517911.7600000002," 31-90":522570.54000000004,">90":2691352.69,"Average CIDS":128.78564581841354,"Nb queries":0,"Amount queries":0,"WIP":4227035.539999999},{"YEAR":25,"MONTH":11,"P Line":"IND","KPI":"OTROS","Revenue":2355954.5900000003,"Billing":2516197.11,"TOTAL AR":5925549.819999999,"COLLECTION":1951675.4399999997,"INVOICING":3027266.84,"DSO_":73.24660502961862,"CIDS_":124.54613266561006,"Past Due":1354757.8300000003,"Current ":4569213,"  1-30":873407.0499999999," 31-90":267544.52,">90":217281.92999999996,"Average DSO":66.43130736075162,"Average CIDS":111.07354543710886,"Nb queries":80,"Amount queries":139904.18,"WIP":4150061.3800000004},{"YEAR":25,"MONTH":11,"P Line":"Total","KPI":"OTROS","Revenue":14567327.150000004,"Billing":14842420.190000003,"TOTAL AR":38519974.76,"COLLECTION":16041637.999999998,"INVOICING":18724376.41,"DSO_":71.3161904582391,"CIDS_":97.78392251439075,"Past Due":12912171.539999997,"Current ":25414041.639999997,"  1-30":5245324.239999998," 31-90":2581185.4600000004,">90":4997548.86,"Average DSO":65.54558804049871,"Average CIDS":88.53508896127364,"Nb queries":1123,"Amount queries":1252129.59,"WIP":14296001.570000002},{"YEAR":25,"MONTH":12,"P Line":"AFC","KPI":"M-1","Revenue":46666.69,"Billing":46666.69,"TOTAL AR":125534.73,"COLLECTION":74948.5,"INVOICING":59332.95999999999,"DSO_":46.12037086929687,"CIDS_":46.12037086929687,"Past Due":72191.48,"Current ":53343.25,"  1-30":39231.48," 31-90":25755.440000000002,">90":7573.5599999999995,"Average DSO":60.601069591512335,"Average CIDS":60.601069591512335,"Revenue Acumulado":600490.53,"Billing Acumulado":523535.61000000004,"Nb queries":9,"Amount queries":8879.17,"WIP":0},{"YEAR":25,"MONTH":12,"P Line":"BIC","KPI":"M-1","Revenue":1156947.48,"Billing":1173618.92,"TOTAL AR":3976176.0100000002,"COLLECTION":1408674.8599999999,"INVOICING":1482264.75,"DSO_":62.22751252648857,"CIDS_":79.97508568267791,"Past Due":1780782.1599999997,"Current ":2035121.2800000003,"  1-30":541510.8099999999," 31-90":544007.1,">90":517688.70000000007,"Average DSO":67.32531072619119,"Average CIDS":84.56647844789424,"Revenue Acumulado":13619705.620000003,"Billing Acumulado":13321810.46,"Nb queries":209,"Amount queries":369934.1100000001,"WIP":1134023.7100000002},{"YEAR":25,"MONTH":12,"P Line":"BIO","KPI":"M-1","Revenue":3294915.1400000006,"Billing":4203587.960000003,"TOTAL AR":10368862.52,"COLLECTION":4846940.769999999,"INVOICING":5365627.850000001,"DSO_":59.68036100944271,"CIDS_":75.69776081945645,"Past Due":3833266.5300000003,"Current ":6535595.989999997,"  1-30":1894936.3599999992," 31-90":1062743.35,">90":923452.1300000004,"Average DSO":60.927597213640986,"Average CIDS":82.33514489106513,"Revenue Acumulado":43267954.590000026,"Billing Acumulado":42783472.89000002,"Nb queries":677,"Amount queries":467027.82000000007,"WIP":2782862.129999999},{"YEAR":25,"MONTH":12,"P Line":"CER","KPI":"M-1","Revenue":3012085.9600000004,"Billing":3504895.879999999,"TOTAL AR":8326888.7,"COLLECTION":5137947.909999999,"INVOICING":4490779.330000001,"DSO_":49.714003837770996,"CIDS_":52.89781537894219,"Past Due":3437518.3499999987,"Current ":4659700.14,"  1-30":1940599.6600000001," 31-90":861055.8899999999,">90":524468.7999999999,"Average DSO":53.01147982802777,"Average CIDS":59.78533590494362,"Revenue Acumulado":40313212.510000005,"Billing Acumulado":40768325.32999999,"Nb queries":78,"Amount queries":154678.19,"WIP":533275.1799999998},{"YEAR":25,"MONTH":12,"P Line":"IDP","KPI":"M-1","Revenue":2146002.7199999997,"Billing":3087747.5299999993,"TOTAL AR":9728270.520000001,"COLLECTION":3687750.14,"INVOICING":3717649.2800000003,"DSO_":77.98308553722443,"CIDS_":105.4170655329887,"Past Due":3652981.47,"Current ":6075289.050000001,"  1-30":660930.42," 31-90":919641.45,">90":2072912.02,"Average DSO":94.84044627707641,"Average CIDS":135.72679590274595,"Revenue Acumulado":21771649.970000003,"Billing Acumulado":21016964.39,"Nb queries":0,"Amount queries":0,"WIP":3422347},{"YEAR":25,"MONTH":12,"P Line":"IND","KPI":"M-1","Revenue":2014087.6300000001,"Billing":2587035.019999999,"TOTAL AR":6879270.350000001,"COLLECTION":2156827.32,"INVOICING":3113318.33,"DSO_":72.39163480237504,"CIDS_":110.03416321536969,"Past Due":2150552.67,"Current ":4728717.68,"  1-30":1357476.44," 31-90":580178.19,">90":214794.72,"Average DSO":66.66253058070352,"Average CIDS":112.66814203239596,"Revenue Acumulado":24082824.68,"Billing Acumulado":22371105.03,"Nb queries":60,"Amount queries":97386.25000000001,"WIP":3577113.9899999998},{"YEAR":25,"MONTH":12,"P Line":"SOL","KPI":"M-1","Revenue":954000,"Billing":954000,"TOTAL AR":3088140,"COLLECTION":0,"INVOICING":1154588.2194,"DSO_":78.54600515647594,"CIDS_":94.67215770633251,"Past Due":1933230,"Current ":1154909.9999999998,"  1-30":792800," 31-90":399000,">90":282000,"Average DSO":67.10981444471307,"Average CIDS":90.5071568258566,"Nb queries":0,"Amount queries":0,"WIP":634021},{"YEAR":25,"MONTH":12,"P Line":"Total","KPI":"M-1","Revenue":12624705.620000003,"Billing":14603551.999999996,"TOTAL AR":42493142.830000006,"COLLECTION":17313089.5,"INVOICING":19383560.7194,"DSO_":63.7127905417575,"CIDS_":82,"Past Due":16860522.66,"Current ":25242677.389999997,"  1-30":7227485.169999998," 31-90":4392381.42,">90":4542889.930000001,"Average DSO":65.87371322681985,"Average CIDS":89.45114368366221,"Revenue Acumulado":143655837.90000004,"Billing Acumulado":140785213.71000004,"Nb queries":1033,"Amount queries":1097905.54,"WIP":12083643.009999998},{"YEAR":26,"MONTH":1,"P Line":"AFC","KPI":"ACTUAL","Revenue":42451.92999999999,"Billing":42451.92999999999,"TOTAL AR":108403.34,"COLLECTION":67904.56999999999,"INVOICING":50773.18,"DSO_":48.84781146166864,"CIDS_":48.84781146166864,"Past Due":56767.59999999999,"Current ":51635.74,"  1-30":19551.430000000004," 31-90":30414.63,">90":7170.539999999999,"Average DSO":59.41866142135544,"Average CIDS":59.41866142135544,"Revenue Acumulado":42451.92999999999,"Billing Acumulado":42451.92999999999,"Nb queries":8,"Amount queries":3716.98,"WIP":0},{"YEAR":26,"MONTH":1,"P Line":"BIC","KPI":"ACTUAL","Revenue":1135425.1699999997,"Billing":828522.35,"TOTAL AR":3692265.5099999993,"COLLECTION":1310513.1099999999,"INVOICING":1030605.5000000001,"DSO_":82.56714752939615,"CIDS_":114.78942218957651,"Past Due":1982263.0799999998,"Current ":1710002.4300000002,"  1-30":727276.3," 31-90":513667.7799999999,">90":584173.09,"Average DSO":68.76964505657102,"Average CIDS":87.3848847762225,"Revenue Acumulado":1135425.1699999997,"Billing Acumulado":828522.35,"Nb queries":192,"Amount queries":323264.43999999994,"WIP":1440926.5300000003},{"YEAR":26,"MONTH":1,"P Line":"BIO","KPI":"ACTUAL","Revenue":2986761.6300000013,"Billing":3109913.9000000004,"TOTAL AR":9582446.55,"COLLECTION":4763648.579999998,"INVOICING":3977097.7599999993,"DSO_":58.810233083869456,"CIDS_":75.20721529649668,"Past Due":4072151.53,"Current ":5510295.0200000005,"  1-30":1929221.16," 31-90":1235050.59,">90":951792.9400000005,"Average DSO":60.885141752073345,"Average CIDS":82.35195010898263,"Revenue Acumulado":2986761.6300000013,"Billing Acumulado":3109913.9000000004,"Nb queries":665,"Amount queries":472632.9700000001,"WIP":2671698.4000000004},{"YEAR":26,"MONTH":1,"P Line":"CER","KPI":"ACTUAL","Revenue":2580309.98,"Billing":2234387.4599999995,"TOTAL AR":6858519.329999999,"COLLECTION":4455968.899999999,"INVOICING":2991680.98,"DSO_":47.90584374916212,"CIDS_":54.301723501672555,"Past Due":3127683.24,"Current ":3730836.090000001,"  1-30":1419166.5000000002," 31-90":910056.7699999999,">90":622497.2,"Average DSO":53.125695867416745,"Average CIDS":60.113810283724575,"Revenue Acumulado":2580309.98,"Billing Acumulado":2234387.4599999995,"Nb queries":90,"Amount queries":158613.65,"WIP":915676.7000000001},{"YEAR":26,"MONTH":1,"P Line":"IDP","KPI":"ACTUAL","Revenue":2562215.98,"Billing":1641758.56,"TOTAL AR":8747778.92,"COLLECTION":2987895.8,"INVOICING":2006901.7399999998,"DSO_":86.55466132888733,"CIDS_":142.05051280562859,"Past Due":3679289.7300000004,"Current ":5068489.19,"  1-30":774087.82," 31-90":833477.85,">90":2071724.0599999998,"Average DSO":95.43728904664796,"Average CIDS":139.08601926643038,"Revenue Acumulado":2562215.98,"Billing Acumulado":1641758.56,"Nb queries":0,"Amount queries":0,"WIP":4342805.42},{"YEAR":26,"MONTH":1,"P Line":"IND","KPI":"ACTUAL","Revenue":1542891.27,"Billing":1522803.7,"TOTAL AR":5680328.699999998,"COLLECTION":3002901.7600000002,"INVOICING":1803961.6099999999,"DSO_":64.34974796636541,"CIDS_":102.24077699999395,"Past Due":2331696.17,"Current ":3348632.53,"  1-30":1298243.07," 31-90":847718.0100000001,">90":187631.77,"Average DSO":66.58967700974289,"Average CIDS":113.70449353814136,"Revenue Acumulado":1542891.27,"Billing Acumulado":1522803.7,"Nb queries":57,"Amount queries":122515.26,"WIP":3344745.0300000003},{"YEAR":26,"MONTH":1,"P Line":"SOL","KPI":"ACTUAL","Revenue":803640,"Billing":803640,"TOTAL AR":6491140,"COLLECTION":0,"INVOICING":803640,"DSO_":198.1963125984961,"CIDS_":224.68400215367367,"Past Due":4304040,"Current ":2187100,"  1-30":1630500," 31-90":723400,">90":539010,"Average DSO":138.371158877486,"Average CIDS":159.6780799300031,"Revenue Acumulado":803640,"Billing Acumulado":803640,"Nb queries":0,"Amount queries":0,"WIP":634021},{"YEAR":26,"MONTH":1,"P Line":"Total","KPI":"ACTUAL","Revenue":10850055.960000003,"Billing":9379837.900000002,"TOTAL AR":34669742.34999998,"COLLECTION":16588832.720000003,"INVOICING":11861020.77,"DSO_":63.92127629537792,"CIDS_":89.69982817567745,"Past Due":15249851.349999992,"Current ":14351401.81,"  1-30":5393458.460000001," 31-90":3536907.7800000003,">90":2353265.5400000005,"Average DSO":66.05468957575324,"Average CIDS":90.49852444183081,"Revenue Acumulado":10850055.96,"Billing Acumulado":9379837.9,"Nb queries":1012,"Amount queries":1080743.3,"WIP":12715852.080000002}];
+        let charts = {};
+
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            themeToggle.textContent = '☀️';
+        }
+
+        themeToggle.addEventListener('click', function() {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            themeToggle.textContent = isLight ? '☀️' : '🌙';
+            if (Object.keys(charts).length > 0) {
+                const latest = getLatestMonth();
+                if (latest) renderCharts(latest);
+            }
+        });
+
+        function populatePLineSelect() {
+            const pLines = [...new Set(allData.map(d => d['P Line']).filter(p => p && !p.toString().startsWith('Total')))].sort();
+            const select = document.getElementById('pLineSelect');
+            select.innerHTML = '<option value="all">All P Lines</option>';
+            pLines.forEach(pLine => {
+                const option = document.createElement('option');
+                option.value = pLine;
+                option.textContent = pLine;
+                select.appendChild(option);
+            });
+            select.addEventListener('change', updateDashboard);
+        }
+
+        function getFilteredData() {
+            const selected = document.getElementById('pLineSelect').value;
+            if (selected === 'all') return allData.filter(d => d['P Line'] === 'Total');
+            return allData.filter(d => d['P Line'] === selected);
+        }
+
+        function getLatestMonth() {
+            const data = getFilteredData();
+            const months = data.map(d => ({ year: d.YEAR, month: d.MONTH }));
+            const sorted = months.sort((a, b) => a.year !== b.year ? b.year - a.year : b.month - a.month);
+            return sorted[0];
+        }
+
+        function getDataByYearMonth(year, month) {
+            return getFilteredData().filter(d => d.YEAR === year && d.MONTH === month);
+        }
+
+        function updateDashboard() {
+            const latest = getLatestMonth();
+            if (!latest) return;
+
+            const currentData = getDataByYearMonth(latest.year, latest.month);
+            const lyData = getDataByYearMonth(latest.year - 1, latest.month);
+            renderKPIs(currentData, lyData);
+            renderInsights(currentData, lyData, latest);
+            renderCharts(latest);
+        }
+
+        function renderKPIs(current, ly) {
+            const currentRecord = current[0] || {};
+            const lyRecord = ly[0] || {};
+
+            const billingAccum = (parseFloat(currentRecord['Billing Acumulado']) || 0) / 1000000;
+            const revenueAccum = (parseFloat(currentRecord['Revenue Acumulado']) || 0) / 1000000;
+            const billingPercent = revenueAccum > 0 ? (billingAccum / revenueAccum * 100) : 0;
+
+            const dso = parseFloat(currentRecord['Average DSO']) || 0;
+            const lyDso = parseFloat(lyRecord['Average DSO']) || 0;
+            const dsoChange = dso - lyDso;
+
+            const cids = parseFloat(currentRecord['Average CIDS']) || 0;
+            const lyCids = parseFloat(lyRecord['Average CIDS']) || 0;
+            const cidsChange = cids - lyCids;
+
+            const totalDebt = parseFloat(currentRecord['TOTAL AR']) || 0;
+            const overdue = parseFloat(currentRecord['Past Due']) || 0;
+            const lyTotalDebt = parseFloat(lyRecord['TOTAL AR']) || 0;
+            const lyOverdue = parseFloat(lyRecord['Past Due']) || 0;
+            
+            const overduePercent = totalDebt > 0 ? (overdue / totalDebt * 100) : 0;
+            const lyOverduePercent = lyTotalDebt > 0 ? (lyOverdue / lyTotalDebt * 100) : 0;
+            const overdueChange = overduePercent - lyOverduePercent;
+
+            const over90 = (parseFloat(currentRecord['>90']) || 0) / 1000000;
+            const lyOver90 = (parseFloat(lyRecord['>90']) || 0) / 1000000;
+            const over90Change = over90 - lyOver90;
+
+            const wip = (parseFloat(currentRecord['WIP']) || 0) / 1000000;
+            const lyWip = (parseFloat(lyRecord['WIP']) || 0) / 1000000;
+            const wipChange = wip - lyWip;
+
+            const kpiGrid = document.getElementById('kpiGrid');
+            kpiGrid.innerHTML = `
+                <div class="kpi-card">
+                    <div class="kpi-label">Billing YTD</div>
+                    <div class="billing-ytd-container">
+                        <div class="billing-ytd-main">
+                            <div class="billing-ytd-value">${billingAccum.toFixed(2)}M€</div>
+                            <div>
+                                <div class="billing-ytd-percent">${billingPercent.toFixed(1)}%</div>
+                                <div class="billing-ytd-label">% Rev</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card ${dsoChange < 0 ? '' : 'negative'}">
+                    <div class="kpi-label">DSO</div>
+                    <div class="kpi-value">${dso.toFixed(1)}</div>
+                    <div class="kpi-comparison">
+                        <div class="comparison-item">
+                            <span class="comparison-label">VLY:</span>
+                            <div class="comparison-badge ${dsoChange < 0 ? 'positive' : 'negative'}">
+                                ${dsoChange < 0 ? '✓' : '✗'}
+                            </div>
+                            <span class="comparison-value ${dsoChange < 0 ? '' : 'negative'}">${dsoChange >= 0 ? '+' : ''}${dsoChange.toFixed(1)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card ${cidsChange < 0 ? '' : 'negative'}">
+                    <div class="kpi-label">CIDS</div>
+                    <div class="kpi-value">${cids.toFixed(1)}</div>
+                    <div class="kpi-comparison">
+                        <div class="comparison-item">
+                            <span class="comparison-label">VLY:</span>
+                            <div class="comparison-badge ${cidsChange < 0 ? 'positive' : 'negative'}">
+                                ${cidsChange < 0 ? '✓' : '✗'}
+                            </div>
+                            <span class="comparison-value ${cidsChange < 0 ? '' : 'negative'}">${cidsChange >= 0 ? '+' : ''}${cidsChange.toFixed(1)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card ${overdueChange < 0 ? '' : 'negative'}">
+                    <div class="kpi-label">% Overdue</div>
+                    <div class="kpi-value">${overduePercent.toFixed(1)}%</div>
+                    <div class="kpi-comparison">
+                        <div class="comparison-item">
+                            <span class="comparison-label">VLY:</span>
+                            <div class="comparison-badge ${overdueChange < 0 ? 'positive' : 'negative'}">
+                                ${overdueChange < 0 ? '✓' : '✗'}
+                            </div>
+                            <span class="comparison-value ${overdueChange < 0 ? '' : 'negative'}">${overdueChange >= 0 ? '+' : ''}${overdueChange.toFixed(1)}pp</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card ${over90Change >= 0 ? 'negative' : ''}">
+                    <div class="kpi-label">>90 Days</div>
+                    <div class="kpi-value">${over90.toFixed(2)}M€</div>
+                    <div class="kpi-comparison">
+                        <div class="comparison-item">
+                            <span class="comparison-label">VLY:</span>
+                            <div class="comparison-badge ${over90Change < 0 ? 'positive' : 'negative'}">
+                                ${over90Change < 0 ? '✓' : '✗'}
+                            </div>
+                            <span class="comparison-value ${over90Change < 0 ? '' : 'negative'}">${over90Change >= 0 ? '+' : ''}${over90Change.toFixed(2)}M€</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card ${wipChange >= 0 ? 'negative' : ''}">
+                    <div class="kpi-label">WIP</div>
+                    <div class="kpi-value">${wip.toFixed(2)}M€</div>
+                    <div class="kpi-comparison">
+                        <div class="comparison-item">
+                            <span class="comparison-label">VLY:</span>
+                            <div class="comparison-badge ${wipChange < 0 ? 'positive' : 'negative'}">
+                                ${wipChange < 0 ? '✓' : '✗'}
+                            </div>
+                            <span class="comparison-value ${wipChange < 0 ? '' : 'negative'}">${wipChange >= 0 ? '+' : ''}${wipChange.toFixed(2)}M€</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        function formatMoneyM(value) {
+            var n = Number(value) || 0;
+            var sign = n < 0 ? "-" : "";
+            var abs = Math.abs(n);
+            return sign + "€" + abs.toFixed(1) + "m";
+        }
+
+        function formatDays(value) {
+            var n = Number(value) || 0;
+            var sign = n > 0 ? "+" : "";
+            return sign + n.toFixed(1) + " days";
+        }
+
+        function formatPP(value) {
+            var n = Number(value) || 0;
+            var sign = n > 0 ? "+" : "";
+            return sign + n.toFixed(1) + "pp";
+        }
+
+        function monthLabel(year, month) {
+            var names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            return names[(month || 1) - 1] + " " + year;
+        }
+
+        function renderInsights(current, ly, latest) {
+            var panel = document.getElementById('insightPanel');
+            if (!panel) return;
+
+            var currentRecord = current[0] || {};
+            var lyRecord = ly[0] || {};
+
+            // Core metrics
+            var dso = parseFloat(currentRecord['Average DSO']) || 0;
+            var lyDso = parseFloat(lyRecord['Average DSO']) || 0;
+            var dsoChange = dso - lyDso;
+
+            var cids = parseFloat(currentRecord['Average CIDS']) || 0;
+            var lyCids = parseFloat(lyRecord['Average CIDS']) || 0;
+            var cidsChange = cids - lyCids;
+
+            var totalAR = parseFloat(currentRecord['TOTAL AR']) || 0;
+            var overdue = parseFloat(currentRecord['Past Due']) || 0;
+            var lyTotalAR = parseFloat(lyRecord['TOTAL AR']) || 0;
+            var lyOverdue = parseFloat(lyRecord['Past Due']) || 0;
+
+            var overduePct = totalAR > 0 ? (overdue / totalAR * 100) : 0;
+            var lyOverduePct = lyTotalAR > 0 ? (lyOverdue / lyTotalAR * 100) : 0;
+            var overduePctChange = overduePct - lyOverduePct;
+
+            var over90 = (parseFloat(currentRecord['>90']) || 0);
+            var lyOver90 = (parseFloat(lyRecord['>90']) || 0);
+            var over90Change = (over90 - lyOver90) / 1000000;
+
+            var wip = (parseFloat(currentRecord['WIP']) || 0);
+            var lyWip = (parseFloat(lyRecord['WIP']) || 0);
+            var wipChange = (wip - lyWip) / 1000000;
+
+            var collection = (parseFloat(currentRecord['COLLECTION']) || 0) / 1000000;
+            var invoicing = (parseFloat(currentRecord['INVOICING']) || 0) / 1000000;
+
+            // Momentum: last 13 months collection vs invoicing
+            var months = [];
+            try { months = getLast13Months(latest); } catch(e) { months = []; }
+            var beats = 0;
+            months.forEach(function(m) {
+                var data = getDataByYearMonth(m.year, m.month);
+                var r = data[0] || {};
+                var c = (parseFloat(r['COLLECTION']) || 0);
+                var i = (parseFloat(r['INVOICING']) || 0);
+                if (c > i) beats += 1;
+            });
+
+            // Subtitle + badges
+            var subtitle = document.getElementById('insightSubtitle');
+            if (subtitle) subtitle.textContent = monthLabel(latest.year, latest.month) + " • Auto-generated narrative (vs LY)";
+
+            var badges = document.getElementById('insightBadges');
+            if (badges) {
+                var pLineEl = document.getElementById('pLineSelect');
+                var pLine = pLineEl ? pLineEl.value : "all";
+                badges.innerHTML =
+                    '<span class="insight-badge">P Line: ' + (pLine === "all" ? "All" : pLine) + '</span>' +
+                    '<span class="insight-badge">Coverage: ' + (months.length || 0) + ' months</span>' +
+                    '<span class="insight-badge">C&gt;Inv: ' + beats + '/' + (months.length || 13) + '</span>';
+            }
+
+            // Build highlights (prioritize signal)
+            var items = [];
+
+            // 1) DSO headline
+            if (Math.abs(dsoChange) >= 1) {
+                var driver = over90Change !== 0 ? (', with &gt;90 ' + (over90Change > 0 ? 'up ' : 'down ') + formatMoneyM(Math.abs(over90Change))) : '';
+                items.push({
+                    text: '<b>DSO</b> at <b>' + dso.toFixed(1) + '</b> (' + formatDays(dsoChange) + ' vs LY)' + driver + '.'
+                });
+            } else {
+                items.push({
+                    text: '<b>DSO</b> broadly stable at <b>' + dso.toFixed(1) + '</b> (' + formatDays(dsoChange) + ' vs LY).'
+                });
+            }
+
+            // 2) CIDS
+            if (Math.abs(cidsChange) >= 1) {
+                items.push({
+                    text: '<b>CIDS</b> at <b>' + cids.toFixed(1) + '</b> (' + formatDays(cidsChange) + ' vs LY).'
+                });
+            }
+
+            // 3) Overdue %
+            items.push({
+                text: '<b>Overdue</b> at <b>' + overduePct.toFixed(1) + '%</b> (' + formatPP(overduePctChange) + ' vs LY) on TOTAL AR of ' + (totalAR/1000000).toFixed(1) + 'm.'
+            });
+
+            // 4) Cash conversion (collection vs invoicing)
+            var latestBeat = collection - invoicing;
+            items.push({
+                text: '<b>Cash conversion</b>: Collection ' + formatMoneyM(collection) + ' vs Invoicing ' + formatMoneyM(invoicing) + ' (' + (latestBeat >= 0 ? 'ahead' : 'behind') + ' by ' + formatMoneyM(Math.abs(latestBeat)) + ').'
+            });
+
+            // 5) WIP if meaningful
+            if (Math.abs(wipChange) >= 0.5) {
+                items.push({
+                    text: '<b>WIP</b> ' + (wipChange > 0 ? 'up ' : 'down ') + formatMoneyM(Math.abs(wipChange)) + ' vs LY (current ' + formatMoneyM(wip/1000000) + ').'
+                });
+            }
+
+            // Render list
+            var list = document.getElementById('insightList');
+            if (list) {
+                list.innerHTML = items.slice(0, 5).map(function(it) {
+                    return '<li class="insight-item"><span class="insight-dot"></span><div class="insight-text">' + it.text + '</div></li>';
+                }).join('');
+            }
+
+            // Risk flags
+            var flags = [];
+            var over90Share = overdue > 0 ? (over90 / overdue * 100) : 0;
+
+            if (over90Share >= 25 && overdue > 0) {
+                flags.push({ cls: "risk-red", text: "🔴 &gt;90 is " + over90Share.toFixed(1) + "% of overdue (threshold 25%)." });
+            } else if (over90Share >= 15 && overdue > 0) {
+                flags.push({ cls: "risk-amber", text: "🟠 &gt;90 is " + over90Share.toFixed(1) + "% of overdue." });
+            } else if (overdue > 0) {
+                flags.push({ cls: "risk-green", text: "🟢 Long-aging contained: &gt;90 is " + over90Share.toFixed(1) + "% of overdue." });
+            }
+
+            if (collection + 1e-9 < invoicing) {
+                flags.push({ cls: "risk-amber", text: "🟠 Collection below invoicing this month." });
+            } else {
+                flags.push({ cls: "risk-green", text: "🟢 Collection ≥ invoicing this month." });
+            }
+
+            if (Math.abs(dsoChange) >= 5) {
+                flags.push({ cls: dsoChange > 0 ? "risk-red" : "risk-green", text: (dsoChange > 0 ? "🔴" : "🟢") + " DSO moved " + formatDays(dsoChange) + " YoY." });
+            }
+
+            if (Math.abs(overduePctChange) >= 2) {
+                flags.push({ cls: overduePctChange > 0 ? "risk-amber" : "risk-green", text: (overduePctChange > 0 ? "🟠" : "🟢") + " Overdue% changed " + formatPP(overduePctChange) + " YoY." });
+            }
+
+            var rf = document.getElementById('riskFlags');
+            if (rf) {
+                rf.innerHTML = flags.slice(0, 6).map(function(f) {
+                    return '<span class="risk-flag ' + f.cls + '">' + f.text + '</span>';
+                }).join('');
+            }
+
+            panel.style.display = 'block';
+        }
+
+        function renderCharts(latest) {
+            renderDSOCIDSChart(latest);
+            renderDebtChart(latest);
+            renderQueriesChart(latest);
+            renderCollectionChart(latest);
+        }
+
+        function getLast13Months(latest) {
+            const months = [];
+            let year = latest.year;
+            let month = latest.month;
+
+            for (let i = 0; i < 13; i++) {
+                months.unshift({ 
+                    year, 
+                    month, 
+                    label: `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month-1]} ${year}` 
+                });
+                month--;
+                if (month === 0) {
+                    month = 12;
+                    year--;
+                }
+            }
+            return months;
+        }
+
+        function renderDSOCIDSChart(latest) {
+            const months = getLast13Months(latest);
+            const dsoData = [];
+            const cidsData = [];
+
+            months.forEach(m => {
+                const data = getDataByYearMonth(m.year, m.month);
+                const record = data[0] || {};
+                dsoData.push(parseFloat(record['Average DSO']) || 0);
+                cidsData.push(parseFloat(record['Average CIDS']) || 0);
+            });
+
+            const ctx = document.getElementById('dsoChart').getContext('2d');
+            if (charts.dso) charts.dso.destroy();
+            
+            const isLight = document.body.classList.contains('light-theme');
+            const textColor = isLight ? '#666666' : '#b0b8d4';
+            const gridColor = isLight ? 'rgba(0, 102, 255, 0.1)' : 'rgba(0, 212, 255, 0.1)';
+
+            charts.dso = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months.map(m => m.label),
+                    datasets: [
+                        {
+                            label: 'DSO',
+                            data: dsoData,
+                            borderColor: '#00d4ff',
+                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#00049E',
+                            pointBorderColor: '#00d4ff',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'CIDS',
+                            data: cidsData,
+                            borderColor: '#00a8cc',
+                            backgroundColor: 'rgba(0, 168, 204, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#00049E',
+                            pointBorderColor: '#00a8cc',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            labels: { 
+                                color: textColor, 
+                                font: { size: 12, weight: 'bold' },
+                                padding: 15
+                            } 
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        },
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderDebtChart(latest) {
+            const currentData = getDataByYearMonth(latest.year, latest.month);
+            const lyData = getDataByYearMonth(latest.year - 1, latest.month);
+
+            const currentRecord = currentData[0] || {};
+            const lyRecord = lyData[0] || {};
+
+            const current = {
+                'Current': parseFloat(currentRecord['Current ']) || 0,
+                '1-30': parseFloat(currentRecord['  1-30']) || 0,
+                '31-90': parseFloat(currentRecord[' 31-90']) || 0,
+                '>90': parseFloat(currentRecord['>90']) || 0
+            };
+
+            const ly = {
+                'Current': parseFloat(lyRecord['Current ']) || 0,
+                '1-30': parseFloat(lyRecord['  1-30']) || 0,
+                '31-90': parseFloat(lyRecord[' 31-90']) || 0,
+                '>90': parseFloat(lyRecord['>90']) || 0
+            };
+
+            const currentTotal = Object.values(current).reduce((a, b) => a + b, 0) || 1;
+            const lyTotal = Object.values(ly).reduce((a, b) => a + b, 0) || 1;
+
+            const currentPercent = Object.keys(current).map(k => (current[k] / currentTotal * 100).toFixed(1));
+            const lyPercent = Object.keys(ly).map(k => (ly[k] / lyTotal * 100).toFixed(1));
+
+            const ctx = document.getElementById('debtChart').getContext('2d');
+            if (charts.debt) charts.debt.destroy();
+            
+            const isLight = document.body.classList.contains('light-theme');
+            const textColor = isLight ? '#666666' : '#b0b8d4';
+            const gridColor = isLight ? 'rgba(0, 102, 255, 0.1)' : 'rgba(0, 212, 255, 0.1)';
+
+            charts.debt = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Current', '1-30 Days', '31-90 Days', '>90 Days'],
+                    datasets: [
+                        {
+                            label: 'CURRENT (%)',
+                            data: currentPercent,
+                            backgroundColor: '#00d4ff',
+                            borderColor: '#00049E',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'VLY (%)',
+                            data: lyPercent,
+                            backgroundColor: '#00a8cc',
+                            borderColor: '#00049E',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            labels: { 
+                                color: textColor, 
+                                font: { size: 12, weight: 'bold' },
+                                padding: 15
+                            } 
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor },
+                            max: 100
+                        },
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderQueriesChart(latest) {
+            const months = getLast13Months(latest);
+            const nbQueriesData = [];
+
+            months.forEach(m => {
+                const data = getDataByYearMonth(m.year, m.month);
+                const record = data[0] || {};
+                nbQueriesData.push(parseFloat(record['Nb queries']) || 0);
+            });
+
+            const ctx = document.getElementById('queriesChart').getContext('2d');
+            if (charts.queries) charts.queries.destroy();
+            
+            const isLight = document.body.classList.contains('light-theme');
+            const textColor = isLight ? '#666666' : '#b0b8d4';
+            const gridColor = isLight ? 'rgba(0, 102, 255, 0.1)' : 'rgba(0, 212, 255, 0.1)';
+
+            charts.queries = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months.map(m => m.label),
+                    datasets: [
+                        {
+                            label: 'Nb Queries',
+                            data: nbQueriesData,
+                            backgroundColor: '#00d4ff',
+                            borderColor: '#00049E',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            labels: { 
+                                color: textColor, 
+                                font: { size: 12, weight: 'bold' },
+                                padding: 15
+                            } 
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        },
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderCollectionChart(latest) {
+            const months = getLast13Months(latest);
+            const collectionData = [];
+            const invoicingData = [];
+
+            months.forEach(m => {
+                const data = getDataByYearMonth(m.year, m.month);
+                const record = data[0] || {};
+                collectionData.push((parseFloat(record['COLLECTION']) || 0) / 1000000);
+                invoicingData.push((parseFloat(record['INVOICING']) || 0) / 1000000);
+            });
+
+            const ctx = document.getElementById('collectionChart').getContext('2d');
+            if (charts.collection) charts.collection.destroy();
+            
+            const isLight = document.body.classList.contains('light-theme');
+            const textColor = isLight ? '#666666' : '#b0b8d4';
+            const gridColor = isLight ? 'rgba(0, 102, 255, 0.1)' : 'rgba(0, 212, 255, 0.1)';
+
+            charts.collection = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months.map(m => m.label),
+                    datasets: [
+                        {
+                            label: 'Collection (M€)',
+                            data: collectionData,
+                            borderColor: '#00d4ff',
+                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#00049E',
+                            pointBorderColor: '#00d4ff',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Invoicing (M€)',
+                            data: invoicingData,
+                            borderColor: '#ff9800',
+                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#00049E',
+                            pointBorderColor: '#ff9800',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            labels: { 
+                                color: textColor, 
+                                font: { size: 12, weight: 'bold' },
+                                padding: 15
+                            } 
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        },
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        populatePLineSelect();
+        updateDashboard();
+    </script>
+</body>
+</html>

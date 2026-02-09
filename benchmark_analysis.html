@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benchmark & Analysis - AI in Finance</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .tool-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .tool-info h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent-blue);
+        }
+
+        .tool-info p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .tool-image {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #002d72;
+            /* Placeholder bg */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+            color: white;
+            font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .tool-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-globes">
+        <div class="globe globe-1"></div>
+        <div class="globe globe-2"></div>
+        <div class="globe globe-3"></div>
+    </div>
+
+    <header>
+        <a href="index.html" class="logo-container">
+            <img src="https://jrisueno74.github.io/RESOURCES_BV/LOGO%20WHITE.png" alt="Bureau Veritas Logo"
+                class="logo-img">
+            <span class="logo-text">Bureau Veritas</span>
+        </a>
+        <div class="subtitle">Benchmark & Analysis</div>
+    </header>
+
+    <main>
+        <section class="hero" style="margin-bottom: 4rem;">
+            <h1 class="gradient-text" style="font-size: 3rem;">Comparative Insights</h1>
+            <p class="hero-subtitle">Performance Metrics & Benchmarks</p>
+        </section>
+
+        <!-- Benchmark Tool -->
+        <section class="tool-section">
+            <div class="tool-info">
+                <h2>Functional Costs Benchmark - Actuals 2025</h2>
+                <p>Interactive dashboard analyzing support function costs (Finance, IT, HR, etc.) across European
+                    regions.
+                    Compare cost ratios against production revenue to identify efficiency opportunities.</p>
+                <div class="card-actions">
+                    <a href="USE CASES/01. BENCHMARK & ANALYSIS/Functional_Costs_Benchmark.html" class="btn-primary"
+                        target="_blank">Launch Dashboard</a>
+                </div>
+            </div>
+            <div class="tool-image">
+                <!-- Placeholder or simple visual representation -->
+                <img src="USE CASES/01. BENCHMARK & ANALYSIS/Functional costs benchmark thumbnail.png"
+                    alt="Benchmark Preview"
+                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; opacity: 0.8;">
+            </div>
+        </section>
+
+        <!-- RACI Matrix Tool -->
+        <section class="tool-section">
+            <div class="tool-info">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                    <h2 style="margin-bottom: 0;">RACI Matrix</h2>
+                    <span
+                        style="background: var(--accent-purple); color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">DRAFT</span>
+                </div>
+                <p>Office Coordinators Roles & Responsibilities Matrix.
+                    Defining clear ownership and communication flows for office management tasks.</p>
+                <div class="card-actions">
+                    <a href="USE CASES/01. BENCHMARK & ANALYSIS/RACI MATRIX COORD OFICINA.html" class="btn-primary"
+                        target="_blank">View Matrix</a>
+                </div>
+            </div>
+            <div class="tool-image">
+                <img src="USE CASES/01. BENCHMARK & ANALYSIS/raci matrix office thumbnail.png" alt="RACI Matrix Preview"
+                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; opacity: 0.9;">
+            </div>
+        </section>
+
+        <div style="text-align: center; margin-top: 4rem;">
+            <a href="index.html" class="btn-secondary">← Back to Home</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Bureau Veritas | AI Workshop Malta</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

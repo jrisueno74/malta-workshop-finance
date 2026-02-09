@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Functional Costs Benchmark - Actuals 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bv-blue: #002d72;
+            --bv-light-blue: #0056b3;
+            --bv-accent: #00a0e3;
+            --bg-color: #f4f7fa;
+            --card-bg: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #5a6a85;
+            --border-color: #e0e6ed;
+            --success: #13deeb;
+            --danger: #ff4b4b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            background: var(--bv-blue);
+            color: white;
+            padding: 0 1.5rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-img {
+            height: 32px;
+            filter: brightness(0) invert(1);
+        }
+
+        .app-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            padding-left: 1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Layout */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-header h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 1rem 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            color: var(--text-secondary);
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-color);
+            color: var(--bv-blue);
+        }
+
+        .nav-item.active {
+            background-color: rgba(0, 160, 227, 0.08);
+            color: var(--bv-blue);
+            border-left-color: var(--bv-accent);
+            font-weight: 600;
+        }
+
+        /* Content Area */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: #fff;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--bv-accent);
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border-color);
+        }
+
+        .kpi-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--bv-blue);
+        }
+
+        .kpi-trend {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* Charts */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            height: 500px;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-header {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            color: var(--bv-blue);
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        /* Insights */
+        .insights-panel {
+            background: linear-gradient(135deg, #002d72 0%, #0056b3 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: auto;
+        }
+
+        .insights-panel h4 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insight-text {
+            line-height: 1.6;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 1200px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .chart-wrapper {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="header-left">
+            <a href="../../index.html">
+                <img src="https://jrisueno74.github.io/RESOURCES_BV/LOGO%20WHITE.png" alt="BV Logo" class="logo-img">
+            </a>
+            <span class="app-title">Functional Costs Benchmark 2025</span>
+        </div>
+        <div class="header-actions">
+            <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;"
+                onchange="handleFileImport(event)">
+            <button class="btn-header" onclick="document.getElementById('fileInput').click()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                Import Data
+            </button>
+            <button class="btn-header" onclick="exportData()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Export Excel
+            </button>
+        </div>
+    </header>
+
+    <div class="workspace">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Departments</h3>
+            </div>
+            <ul class="nav-list" id="departmentList">
+                <li class="nav-item active" onclick="selectDepartment('Total_Overhead')">Total Overhead</li>
+                <li class="nav-item" onclick="selectDepartment('Sales_Marketing')">Sales & Marketing</li>
+                <li class="nav-item" onclick="selectDepartment('Management')">Management</li>
+                <li class="nav-item" onclick="selectDepartment('Finance')">Finance</li>
+                <li class="nav-item" onclick="selectDepartment('Human_Resource')">Human Resources</li>
+                <li class="nav-item" onclick="selectDepartment('IT_IS')">IT / IS</li>
+                <li class="nav-item" onclick="selectDepartment('Legal')">Legal</li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <!-- Controls -->
+            <div class="controls-bar">
+                <div class="filter-group">
+                    <label>Region Filter:</label>
+                    <select id="regionFilter" onchange="applyFilters()">
+                        <option value="All">All Regions</option>
+                        <option value="BNU">BNU (Benelux/UK)</option>
+                        <option value="NORDIC">Nordic</option>
+                        <option value="SWE">SWE (South West Europe)</option>
+                        <option value="CSE">CSE (Central South Europe)</option>
+                        <option value="CYBER">Cyber Region</option>
+                    </select>
+                </div>
+                <!-- <div class="filter-group">
+                    <label>View Mode:</label>
+                    <select id="viewMode" onchange="toggleView()">
+                        <option value="Country">By Country</option>
+                        <option value="Region">By Region Aggregated</option>
+                    </select>
+                </div> -->
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-title">Average Cost Ratio</div>
+                    <div class="kpi-value" id="kpiAvgRatio">--%</div>
+                    <div class="kpi-trend">vs Group Avg</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Most Efficient Country</div>
+                    <div class="kpi-value" id="kpiBestCountry">--</div>
+                    <div class="kpi-trend" style="color: var(--success);" id="kpiBestVal">--%</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Highest Cost Ratio</div>
+                    <div class="kpi-value" id="kpiWorstCountry">--</div>
+                    <div class="kpi-trend" style="color: var(--danger);" id="kpiWorstVal">--%</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Selected Department Spend</div>
+                    <div class="kpi-value" id="kpiTotalSpend">€-- M</div>
+                    <div class="kpi-trend">Annual Actuals</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <span class="chart-title" id="barChartTitle">Cost Ratio by Country</span>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <span class="chart-title">Efficiency vs. Scale</span>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="scatterChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insights-panel">
+                <h4>
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z">
+                        </path>
+                    </svg>
+                    Automated Insights
+                </h4>
+                <p class="insight-text" id="aiInsights">
+                    Loading analysis...
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Data embedded from CSV (Parsed) ---
+        // Format: { Region, Country, Prod_Rev, Dept_Costs: { Sales_Marketing: {Val, Pct}, ... } }
+        let rawData = [
+            { r: 'S&WE', c: 'S&WE', rev: 782088, costs: { Total_Overhead: { v: -93849, p: -12.0 }, Sales_Marketing: { v: -44122, p: -5.6 }, Management: { v: -20391, p: -2.6 }, Finance: { v: -11981, p: -1.5 }, Human_Resource: { v: -8690, p: -1.1 }, IT_IS: { v: -7219, p: -0.9 }, Legal: { v: -1447, p: -0.2 } } },
+
+            // UKR
+            { r: 'UKR', c: 'UNITED KINGDOM', rev: 128447, costs: { Total_Overhead: { v: -10385, p: -8.1 }, Sales_Marketing: { v: -3951, p: -3.1 }, Management: { v: -1916, p: -1.5 }, Finance: { v: -1746, p: -1.4 }, Human_Resource: { v: -1527, p: -1.2 }, IT_IS: { v: -695, p: -0.5 }, Legal: { v: -550, p: -0.4 } } },
+            // BNU
+            { r: 'BNU', c: 'NETHERLANDS', rev: 46707, costs: { Total_Overhead: { v: -5087, p: -10.9 }, Sales_Marketing: { v: -2340, p: -5.0 }, Management: { v: -936, p: -2.0 }, Finance: { v: -684, p: -1.5 }, Human_Resource: { v: -591, p: -1.3 }, IT_IS: { v: -468, p: -1.0 }, Legal: { v: -95, p: -0.2 } } },
+            { r: 'BNU', c: 'BELGIUM', rev: 9937, costs: { Total_Overhead: { v: -928, p: -9.3 }, Sales_Marketing: { v: -364, p: -3.7 }, Management: { v: -161, p: -1.6 }, Finance: { v: -204, p: -2.1 }, Human_Resource: { v: -117, p: -1.2 }, IT_IS: { v: -70, p: -0.7 }, Legal: { v: -12, p: -0.1 } } },
+            { r: 'BNU', c: 'CTD UK', rev: 24311, costs: { Total_Overhead: { v: -1487, p: -6.1 }, Sales_Marketing: { v: -203, p: -0.8 }, Management: { v: -534, p: -2.2 }, Finance: { v: -271, p: -1.1 }, Human_Resource: { v: -312, p: -1.3 }, IT_IS: { v: -167, p: -0.7 }, Legal: { v: 0, p: 0.0 } } },
+            { r: 'BNU', c: 'CTD BELGIUM', rev: 472, costs: { Total_Overhead: { v: -52, p: -11.1 }, Sales_Marketing: { v: -12, p: -2.6 }, Management: { v: -21, p: -4.4 }, Finance: { v: -9, p: -2.0 }, Human_Resource: { v: 0, p: 0.0 }, IT_IS: { v: -10, p: -2.2 }, Legal: { v: 0, p: 0.0 } } },
+
+            // NORDIC
+            { r: 'NORDIC', c: 'DENMARK', rev: 25758, costs: { Total_Overhead: { v: -3096, p: -12.0 }, Sales_Marketing: { v: -2029, p: -7.9 }, Management: { v: -120, p: -0.5 }, Finance: { v: -278, p: -1.1 }, Human_Resource: { v: -265, p: -1.0 }, IT_IS: { v: -404, p: -1.6 }, Legal: { v: 0, p: 0.0 } } },
+            { r: 'NORDIC', c: 'SWEDEN', rev: 7105, costs: { Total_Overhead: { v: -1039, p: -14.6 }, Sales_Marketing: { v: -630, p: -8.9 }, Management: { v: -49, p: -0.7 }, Finance: { v: -188, p: -2.7 }, Human_Resource: { v: -92, p: -1.3 }, IT_IS: { v: -80, p: -1.1 }, Legal: { v: 0, p: 0.0 } } },
+            { r: 'NORDIC', c: 'FINLAND', rev: 5823, costs: { Total_Overhead: { v: -937, p: -16.1 }, Sales_Marketing: { v: -511, p: -8.8 }, Management: { v: -218, p: -3.7 }, Finance: { v: -80, p: -1.4 }, Human_Resource: { v: -80, p: -1.4 }, IT_IS: { v: -48, p: -0.8 }, Legal: { v: 0, p: 0.0 } } },
+
+            // SWE
+            { r: 'SWE', c: 'CIF SPAIN', rev: 111856, costs: { Total_Overhead: { v: -14458, p: -12.9 }, Sales_Marketing: { v: -9112, p: -8.1 }, Management: { v: -1270, p: -1.1 }, Finance: { v: -1323, p: -1.2 }, Human_Resource: { v: -1344, p: -1.2 }, IT_IS: { v: -1228, p: -1.1 }, Legal: { v: -181, p: -0.2 } } },
+            { r: 'SWE', c: 'CIF PORTUGAL', rev: 12034, costs: { Total_Overhead: { v: -1059, p: -8.8 }, Sales_Marketing: { v: -418, p: -3.5 }, Management: { v: -187, p: -1.6 }, Finance: { v: -153, p: -1.3 }, Human_Resource: { v: -148, p: -1.2 }, IT_IS: { v: -121, p: -1.0 }, Legal: { v: -32, p: -0.3 } } },
+            { r: 'SWE', c: 'IDP', rev: 32417, costs: { Total_Overhead: { v: -3715, p: -11.5 }, Sales_Marketing: { v: -1630, p: -5.0 }, Management: { v: -50, p: -0.2 }, Finance: { v: -739, p: -2.3 }, Human_Resource: { v: -630, p: -1.9 }, IT_IS: { v: -627, p: -1.9 }, Legal: { v: -39, p: -0.1 } } },
+
+            // CSE
+            { r: 'CSE', c: 'ITALY', rev: 179389, costs: { Total_Overhead: { v: -16495, p: -9.2 }, Sales_Marketing: { v: -10015, p: -5.6 }, Management: { v: -1818, p: -1.0 }, Finance: { v: -2030, p: -1.1 }, Human_Resource: { v: -1317, p: -0.7 }, IT_IS: { v: -1090, p: -0.6 }, Legal: { v: -265, p: -0.1 } } },
+            { r: 'CSE', c: 'SWITZERLAND', rev: 8603, costs: { Total_Overhead: { v: -1334, p: -15.5 }, Sales_Marketing: { v: -664, p: -7.7 }, Management: { v: -286, p: -3.3 }, Finance: { v: -169, p: -2.0 }, Human_Resource: { v: -87, p: -1.0 }, IT_IS: { v: -128, p: -1.5 }, Legal: { v: 0, p: 0.0 } } },
+            { r: 'CSE', c: 'GERMANY', rev: 42317, costs: { Total_Overhead: { v: -5156, p: -12.2 }, Sales_Marketing: { v: -1822, p: -4.3 }, Management: { v: -791, p: -1.9 }, Finance: { v: -1399, p: -3.3 }, Human_Resource: { v: -571, p: -1.3 }, IT_IS: { v: -395, p: -0.9 }, Legal: { v: -178, p: -0.4 } } },
+            { r: 'CSE', c: 'CIF ROMANIA', rev: 6999, costs: { Total_Overhead: { v: -794, p: -11.3 }, Sales_Marketing: { v: -160, p: -2.3 }, Management: { v: -307, p: -4.4 }, Finance: { v: -175, p: -2.5 }, Human_Resource: { v: -96, p: -1.4 }, IT_IS: { v: -56, p: -0.8 }, Legal: { v: 0, p: 0.0 } } },
+            { r: 'CSE', c: 'HUNGARY', rev: 5052, costs: { Total_Overhead: { v: -683, p: -13.5 }, Sales_Marketing: { v: -183, p: -3.6 }, Management: { v: -235, p: -4.7 }, Finance: { v: -158, p: -3.1 }, Human_Resource: { v: -12, p: -0.2 }, IT_IS: { v: -93, p: -1.8 }, Legal: { v: 0, p: 0.0 } } },
+            { r: 'CSE', c: 'AUSTRIA', rev: 7935, costs: { Total_Overhead: { v: -579, p: -7.3 }, Sales_Marketing: { v: -152, p: -1.9 }, Management: { v: -184, p: -2.3 }, Finance: { v: -142, p: -1.8 }, Human_Resource: { v: -67, p: -0.8 }, IT_IS: { v: -43, p: -0.5 }, Legal: { v: 9, p: 0.1 } } },
+            { r: 'CSE', c: 'POLAND', rev: 15190, costs: { Total_Overhead: { v: -2105, p: -13.9 }, Sales_Marketing: { v: -1241, p: -8.2 }, Management: { v: -251, p: -1.6 }, Finance: { v: -259, p: -1.7 }, Human_Resource: { v: -169, p: -1.1 }, IT_IS: { v: -185, p: -1.2 }, Legal: { v: 0, p: 0.0 } } },
+            { r: 'CSE', c: 'CZECH REP', rev: 7495, costs: { Total_Overhead: { v: -1119, p: -14.9 }, Sales_Marketing: { v: -561, p: -7.5 }, Management: { v: -272, p: -3.6 }, Finance: { v: -112, p: -1.5 }, Human_Resource: { v: -132, p: -1.8 }, IT_IS: { v: -25, p: -0.3 }, Legal: { v: -19, p: -0.2 } } },
+
+            // CYBER
+            { r: 'CYBER', c: 'CYBER USA', rev: 18774, costs: { Total_Overhead: { v: -4140, p: -22.1 }, Sales_Marketing: { v: -2613, p: -13.9 }, Management: { v: -635, p: -3.4 }, Finance: { v: -259, p: -1.4 }, Human_Resource: { v: -365, p: -1.9 }, IT_IS: { v: -240, p: -1.3 }, Legal: { v: -28, p: -0.1 } } },
+            { r: 'CYBER', c: 'CYBER EUR', rev: 27194, costs: { Total_Overhead: { v: -4317, p: -15.9 }, Sales_Marketing: { v: -2892, p: -10.6 }, Management: { v: -249, p: -0.9 }, Finance: { v: -364, p: -1.3 }, Human_Resource: { v: -363, p: -1.3 }, IT_IS: { v: -454, p: -1.7 }, Legal: { v: 0, p: 0.0 } } }
+        ];
+
+        let currentDept = 'Total_Overhead';
+        let barChart = null;
+        let scatterChart = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateDashboard();
+        });
+
+        function initCharts() {
+            // Bar Chart
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            barChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#002d72', padding: 12 }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#e0e6ed' },
+                            ticks: { callback: (val) => Math.abs(val) + '%' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Scatter Chart (Efficiency vs Volume)
+            const ctxScatter = document.getElementById('scatterChart').getContext('2d');
+            scatterChart = new Chart(ctxScatter, {
+                type: 'scatter',
+                data: { datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#002d72',
+                            callbacks: {
+                                label: (ctx) => `${ctx.raw.c}: ${Math.abs(ctx.raw.y)}% ratio, €${(ctx.raw.x / 1000).toFixed(1)}k Vol`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Production Volume (€)' },
+                            grid: { color: '#e0e6ed' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Cost % (Lower is Better)' },
+                            reverse: true, // Lower percentage is better
+                            grid: { color: '#e0e6ed' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function selectDepartment(dept) {
+            currentDept = dept;
+            // Update UI Sidebar
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+
+            updateDashboard();
+        }
+
+        function applyFilters() {
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const regionFilter = document.getElementById('regionFilter').value;
+
+            // Filter Data
+            let filtered = rawData.filter(d => regionFilter === 'All' || d.r === regionFilter);
+
+            // Sort by Efficiency (lowest % first for filtered view, or keep default order)
+            // Let's sort by cost % ascending (better to worse)
+            filtered.sort((a, b) => Math.abs(a.costs[currentDept].p) - Math.abs(b.costs[currentDept].p));
+
+            const labels = filtered.map(d => d.c);
+            const dataValues = filtered.map(d => Math.abs(d.costs[currentDept].p));
+            const color = '#00a0e3';
+
+            // Update KPI Cards
+            const avg = dataValues.reduce((a, b) => a + b, 0) / dataValues.length;
+            const totalSpend = filtered.reduce((a, d) => a + Math.abs(d.costs[currentDept].v), 0);
+            const best = filtered[0];
+            const worst = filtered[filtered.length - 1];
+
+            document.getElementById('kpiAvgRatio').textContent = avg.toFixed(1) + '%';
+            document.getElementById('kpiTotalSpend').textContent = '€' + (totalSpend / 1000).toFixed(1) + 'k';
+
+            if (best) {
+                document.getElementById('kpiBestCountry').textContent = best.c;
+                document.getElementById('kpiBestVal').textContent = Math.abs(best.costs[currentDept].p) + '%';
+                document.getElementById('kpiBestVal').style.color = 'var(--success)';
+            }
+            if (worst) {
+                document.getElementById('kpiWorstCountry').textContent = worst.c;
+                document.getElementById('kpiWorstVal').textContent = Math.abs(worst.costs[currentDept].p) + '%';
+            }
+
+            // Update Bar Chart
+            document.getElementById('barChartTitle').textContent = `${currentDept.replace('_', ' ')} Cost % by Country`;
+            barChart.data.labels = labels;
+            barChart.data.datasets = [{
+                label: 'Cost %',
+                data: dataValues,
+                backgroundColor: filtered.map(d => d.c === 'S&WE' ? '#002d72' : '#00a0e3'), // Highlight Region Aggregate
+                borderRadius: 4
+            }];
+            barChart.update();
+
+            // Update Scatter Chart
+            const scatterData = filtered.map(d => ({
+                x: d.rev,
+                y: Math.abs(d.costs[currentDept].p),
+                c: d.c
+            }));
+
+            scatterChart.data.datasets = [{
+                label: 'Countries',
+                data: scatterData,
+                backgroundColor: '#002d72',
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }];
+            scatterChart.update();
+
+            // Generate Insights
+            generateInsights(best, worst, avg);
+        }
+
+        function generateInsights(best, worst, avg) {
+            const el = document.getElementById('aiInsights');
+            if (!best || !worst) {
+                el.innerText = 'No data available for current selection.';
+                return;
+            }
+
+            const deptName = currentDept.replace('_', ' ');
+            const diff = (Math.abs(worst.costs[currentDept].p) - Math.abs(best.costs[currentDept].p)).toFixed(1);
+
+            el.innerHTML = `
+                <strong>Analysis for ${deptName}:</strong><br>
+                ${best.c} is the most efficient performer in this category with a ratio of <strong>${Math.abs(best.costs[currentDept].p)}%</strong>, 
+                which is significantly better than ${worst.c} (${Math.abs(worst.costs[currentDept].p)}%).<br><br>
+                There is a <strong>${diff} percentage point</strong> spread between the best and lowest performers. 
+                The average ratio for the selected group is <strong>${avg.toFixed(1)}%</strong>. 
+                Countries above this line should review their ${deptName} cost structures.
+            `;
+        }
+
+        // Export Data to Excel
+        function exportData() {
+            const ws_data = [['Region', 'Country', 'Production Revenue', 'Dept', 'Cost', '%']];
+
+            rawData.forEach(item => {
+                Object.keys(item.costs).forEach(dept => {
+                    ws_data.push([
+                        item.r,
+                        item.c,
+                        item.rev,
+                        dept,
+                        item.costs[dept].v,
+                        item.costs[dept].p + '%'
+                    ]);
+                });
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Benchmark Data");
+            XLSX.writeFile(wb, "Functional_Costs_Benchmark_2025.xlsx");
+        }
+
+        // Import Data from Excel (Basic Implementation)
+        function handleFileImport(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                // Note: Real implementation would need robust parsing to map Excel rows back to internal `rawData` structure
+                alert("Import functionality simulation: Data loaded (console log). In full version, this would parse the Excel structure and update the charts.");
+                console.log(json);
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+    </script>
+</body>
+
+</html>
